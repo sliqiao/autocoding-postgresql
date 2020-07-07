@@ -1,0 +1,41 @@
+package ${package}.model;
+
+import lombok.Data;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.sql.Timestamp;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+/**
+ * ${entity.tableComments}
+ * @title 本代码由Autocoding生成
+ * @author  ${author}
+ * @date    ${date}
+ * @description:  
+ * @log:    ${date}  ${author}  新建
+ */
+@Data
+@Entity
+@Table(name = "${entity.tableName}")
+public class ${entity.entityName}  {
+      <#--主键-->
+        /**  ${pkField.fieldDes}  */
+        @Id
+        @Column(name = "${pkField.fieldName}")
+        private ${pkField.propertyType} ${pkField.propertyName};
+      <#--属性-->
+       <#list fields as field>  
+        <#if field.propertyName!=pkField.propertyName>
+         /**  ${field.fieldDes}  */
+         @Column(name = "${field.fieldName}")
+          <#if field.propertyType=='Long'>
+         @JsonSerialize(using = ToStringSerializer.class)
+          </#if>
+         private ${field.propertyType}  ${field.propertyName};
+        </#if>
+     </#list>   
+	 
+  
+}
