@@ -5,6 +5,12 @@
 	<artifactId>autocoding-postgresql</artifactId>
 	<version>1.0</version>
 	<description>代码自动生成工具</description>
+	<prerequisites>
+	目前支持的数据库为：
+	1、Oracle
+	2、Mysql
+	3、Postgresql
+	</prerequisites>
 	<developers>
 		<developer>
 			<name>李桥</name>
