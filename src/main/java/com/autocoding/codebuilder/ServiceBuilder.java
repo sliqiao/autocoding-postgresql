@@ -7,8 +7,15 @@ import com.autocoding.freemarker.FreemarkerUtil;
 import com.autocoding.model.CodeBuilderAnnotation;
 import com.autocoding.model.Project;
 
+/**
+ * 
+ * @ClassName: ServiceBuilder
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:14:28 PM
+ */
 @CodeBuilderAnnotation(desc = "生成Service文件")
-public class ServiceBuilder extends AbsCodeBuilder {
+public class ServiceBuilder extends BaseCodeBuilder {
 
 	public ServiceBuilder(Project project) {
 		super(project);

@@ -7,8 +7,15 @@ import com.autocoding.freemarker.FreemarkerUtil;
 import com.autocoding.model.CodeBuilderAnnotation;
 import com.autocoding.model.Project;
 
+/**
+ * 
+ * @ClassName: IBatisBuilder
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:13:34 PM
+ */
 @CodeBuilderAnnotation(desc = "生成Ibatis配置文件")
-public class IBatisBuilder extends AbsCodeBuilder {
+public class IBatisBuilder extends BaseCodeBuilder {
 
 	public IBatisBuilder(Project project) {
 		super(project);

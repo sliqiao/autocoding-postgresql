@@ -9,12 +9,12 @@ package com.autocoding.constant;
  */
 
 public interface ConfigConstant {
-	public static String c3p0_driverClass = "c3p0.driverClass";
-	public static String c3p0_jdbcUrl = "c3p0.jdbcUrl";
-	public static String c3p0_user = "c3p0.user";
-	public static String c3p0_password = "c3p0.password";
-	public static String autocoding_package = "autocoding.package";
-	public static String autocoding_table_names = "autocoding.table.names";
-	public static String autocoding_prefix = "autocoding.prefix";
-	public static String autocoding_author = "autocoding.author";
+	public static String C3P0_DRIVERCLASS = "c3p0.driverClass";
+	public static String C3P0_JDBCURL = "c3p0.jdbcUrl";
+	public static String C3P0_USER = "c3p0.user";
+	public static String C3P0_PASSWORD = "c3p0.password";
+	public static String AUTOCODING_PACKAGE = "autocoding.package";
+	public static String AUTOCODING_TABLE_NAMES = "autocoding.table.names";
+	public static String AUTOCODING_PREFIX = "autocoding.prefix";
+	public static String AUTOCODING_AUTHOR = "autocoding.author";
 }

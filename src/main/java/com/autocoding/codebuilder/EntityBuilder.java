@@ -16,7 +16,7 @@ import com.autocoding.model.Project;
  * @version 1.0
  */
 @CodeBuilderAnnotation(desc = "生成对象实体")
-public class EntityBuilder extends AbsCodeBuilder {
+public class EntityBuilder extends BaseCodeBuilder {
 	public EntityBuilder(Project project) {
 		super(project);
 		super.fileoutputPath = super.project.getEntitiesPath() + super.entity.getEntityName() + ".java";

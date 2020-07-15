@@ -97,11 +97,6 @@ public class Field {
 
 	private String createSetter() {
 		StringBuffer codeBuffer = new StringBuffer();
-
-		// public void setAreaId(String areaId) {
-		/**
-		 * @return 获取 fieldDes属性值
-		 */
 		codeBuffer.append("	 \r\n");
 		int endIndex = this.getFieldDes().length() - 1;
 		if (this.getFieldDes().length() > Field.MAX_FIELD_DESC_LENGTH) {

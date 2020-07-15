@@ -18,13 +18,13 @@ public interface FreemarkerTag {
 		public static final String PK_FIELD = "pkField";
 		public static final String FIELDS = "fields";
 		public static final String PREFIX_WITH_SHARP = "prefixWithSharp";
-		public static final String EntityBeanName = "entityBeanName";
-		public static final String EntityName = "entityName";
-		public static final String Entity = "entity";
+		public static final String ENTITY_BEAN_NAME = "entityBeanName";
+		public static final String ENTITY_NAME = "entityName";
+		public static final String ENTITY = "entity";
 		public static final String DATE = "date";
 		public static final String PACKAGE = "package";
 		public static final String JSP_PATH = "jspPath";
-		public static final String DB2Map = "db2Map";
+		public static final String DB_2_MAP = "db2Map";
 		public static final String PKID = "pkid";
 		public static final String MODEL = "model";
 		public static final String PREFIX = "prefix";

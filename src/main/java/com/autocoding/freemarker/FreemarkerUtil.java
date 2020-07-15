@@ -105,7 +105,7 @@ public final class FreemarkerUtil {
 	public static String exportString(final Map<String, Object> data, final String templateDirectory,
 			final String templateFileName) {
 		try {
-			StringBuffer resultSB = new StringBuffer();
+			StringBuffer stringBuffer = new StringBuffer();
 			Configuration configuration = new Configuration();
 			configuration.setDefaultEncoding(FreemarkerUtil.TEMPLATE_FILE_ENCODING);
 			File templateDirectoryFile = new File(templateDirectory);
@@ -120,11 +120,11 @@ public final class FreemarkerUtil {
 				return null;
 			}
 			StringWriter writer = new StringWriter(1024);
-			resultSB = writer.getBuffer();
+			stringBuffer = writer.getBuffer();
 			template.process(data, writer);
 			writer.flush();
 			writer.close();
-			return resultSB.toString();
+			return stringBuffer.toString();
 		} catch (Exception e) {
 			FreemarkerUtil.LOGGER.error("异常：" + e.toString());
 			return null;
@@ -141,15 +141,14 @@ public final class FreemarkerUtil {
 	 * @date 2016年2月3日 liqiao created
 	 */
 	public static void main(final String[] args) {
-		Map<String, Object> data = new HashMap<String, Object>();
+		Map<String, Object> data = new HashMap<String, Object>(10);
 		data.put("name", "李桥");
 		data.put("manager", "某某某");
 		data.put("lover", "电影");
 		String templateDirectory = "F://txt_dir";
 		String templateFileName = "info_excel.ftl";
 		String fileoutputPath = "F://txt_dir/info.xls";
-		// FreemakerUtil.fileExport(data, templateDirectory, templateFileName,
-		// fileoutputPath);
+		// FreemakerUtil.fileExport(data, templateDirectory, templateFileName,fileoutputPath);
 		String s = FreemarkerUtil.exportString(data, templateDirectory, templateFileName);
 		System.err.println("s:" + s);
 

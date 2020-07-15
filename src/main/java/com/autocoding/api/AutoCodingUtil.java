@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.autocoding.codebuilder.AbsCodeBuilder;
+import com.autocoding.codebuilder.BaseCodeBuilder;
 import com.autocoding.constant.ConfigConstant;
 import com.autocoding.model.Entity;
 import com.autocoding.model.Project;
@@ -20,6 +20,13 @@ import com.autocoding.util.CodeBuilderFactory;
 import com.autocoding.util.CodeBuilderScanUtil;
 import com.autocoding.util.FileCompressUtil;
 
+/**
+ * 
+ * @ClassName: AutoCodingUtil
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:13:06 PM
+ */
 public class AutoCodingUtil {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingUtil.class);
@@ -48,16 +55,16 @@ public class AutoCodingUtil {
 	public AutoCodingUtil(String outputDir, Map<String, String> propertyMap) {
 		try {
 			String rootdir = System.getProperty("user.dir");
-			this.jdbcDriver = propertyMap.get(ConfigConstant.c3p0_driverClass);
-			this.jdbcUrl = propertyMap.get(ConfigConstant.c3p0_jdbcUrl);
-			this.userName = propertyMap.get(ConfigConstant.c3p0_user);
-			this.password = propertyMap.get(ConfigConstant.c3p0_password);
-			this.rootPackage = propertyMap.get(ConfigConstant.autocoding_package);
-			this.tablesName = propertyMap.get(ConfigConstant.autocoding_table_names);
-			String prefix = propertyMap.get(ConfigConstant.autocoding_prefix);
+			this.jdbcDriver = propertyMap.get(ConfigConstant.C3P0_DRIVERCLASS);
+			this.jdbcUrl = propertyMap.get(ConfigConstant.C3P0_JDBCURL);
+			this.userName = propertyMap.get(ConfigConstant.C3P0_USER);
+			this.password = propertyMap.get(ConfigConstant.C3P0_PASSWORD);
+			this.rootPackage = propertyMap.get(ConfigConstant.AUTOCODING_PACKAGE);
+			this.tablesName = propertyMap.get(ConfigConstant.AUTOCODING_TABLE_NAMES);
+			String prefix = propertyMap.get(ConfigConstant.AUTOCODING_PREFIX);
 			this.project = new Project(rootdir, this.rootPackage, this.userName, outputDir);
 			this.project.setPrefix(prefix);
-			this.project.setAuthor(propertyMap.get(ConfigConstant.autocoding_author));
+			this.project.setAuthor(propertyMap.get(ConfigConstant.AUTOCODING_AUTHOR));
 			String prefixWithSharp = prefix.replace(".", "/");
 			this.project.setPrefixWithSharp(prefixWithSharp);
 		} catch (Exception e) {
@@ -107,15 +114,15 @@ public class AutoCodingUtil {
 			entity.parseEntityInfo();
 			this.project.setEntity(entity);
 
-			AbsCodeBuilder codeBuilder = null;
+			BaseCodeBuilder codeBuilder = null;
 			Set<Class<?>> codeBuilderSet = CodeBuilderScanUtil.scan();
 			for (Class<?> codeBuilderClass : codeBuilderSet) {
 				codeBuilder = CodeBuilderFactory.createBuilder(codeBuilderClass, this.project);
-				AutoCodingUtil.LOGGER.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath()
-						+ "】 ---【开始】");
+				AutoCodingUtil.LOGGER
+						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【开始】");
 				codeBuilder.saveToFile();
-				AutoCodingUtil.LOGGER.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath()
-						+ "】 ---【结束】");
+				AutoCodingUtil.LOGGER
+						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【结束】");
 			}
 		} catch (Exception e) {
 			AutoCodingUtil.LOGGER.error("执行AutoCodingMain.run()异常：", e);
@@ -128,15 +135,15 @@ public class AutoCodingUtil {
 	}
 
 	public static void main(String[] args) {
-		Map<String, String> propertyMap = new HashMap<String, String>();
-		propertyMap.put(ConfigConstant.c3p0_driverClass, "oracle.jdbc.driver.OracleDriver");
-		propertyMap.put(ConfigConstant.c3p0_jdbcUrl, "jdbc:oracle:thin:@192.168.222.223:1521:ORCL");
-		propertyMap.put(ConfigConstant.c3p0_user, "hrp_easyui");
-		propertyMap.put(ConfigConstant.c3p0_password, "hrp_easyui");
-		propertyMap.put(ConfigConstant.autocoding_package, "com.th.supcom.hrp.rmps");
-		propertyMap.put(ConfigConstant.autocoding_table_names, "APP_DEVELOPER_INFO");
-		propertyMap.put(ConfigConstant.autocoding_prefix, "test");
-		propertyMap.put(ConfigConstant.autocoding_author, "李桥");
+		Map<String, String> propertyMap = new HashMap<String, String>(10);
+		propertyMap.put(ConfigConstant.C3P0_DRIVERCLASS, "oracle.jdbc.driver.OracleDriver");
+		propertyMap.put(ConfigConstant.C3P0_JDBCURL, "jdbc:oracle:thin:@192.168.222.223:1521:ORCL");
+		propertyMap.put(ConfigConstant.C3P0_USER, "hrp_easyui");
+		propertyMap.put(ConfigConstant.C3P0_PASSWORD, "hrp_easyui");
+		propertyMap.put(ConfigConstant.AUTOCODING_PACKAGE, "com.th.supcom.hrp.rmps");
+		propertyMap.put(ConfigConstant.AUTOCODING_TABLE_NAMES, "APP_DEVELOPER_INFO");
+		propertyMap.put(ConfigConstant.AUTOCODING_PREFIX, "test");
+		propertyMap.put(ConfigConstant.AUTOCODING_AUTHOR, "李桥");
 		String outputDir = "E:\\xml_message\\" + UUID.randomUUID();
 
 		AutoCodingUtil autoCodingUtil = AutoCodingUtil.newInstance(outputDir, propertyMap);

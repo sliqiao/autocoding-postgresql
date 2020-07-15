@@ -9,6 +9,13 @@ import org.apache.commons.lang.StringUtils;
 import com.autocoding.util.MyStringUtil;
 import com.autocoding.util.MyStringUtil.GetSeperatedPathFromPackageParameter;
 
+/**
+ * 
+ * @ClassName: Project
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:14:10 PM
+ */
 public class Project {
 
 	private String projPath;
@@ -68,7 +75,8 @@ public class Project {
 
 		this.srcPath = this.outputPath + "src" + File.separator;
 
-		this.rootPackagePath = this.srcPath + MyStringUtil.getSeperatedPathFromPackage(new GetSeperatedPathFromPackageParameter (this.rootPackage));
+		this.rootPackagePath = this.srcPath
+				+ MyStringUtil.getSeperatedPathFromPackage(new GetSeperatedPathFromPackageParameter(this.rootPackage));
 		this.jspRootPath = this.projPath + "WebRoot" + File.separator + "WEB-INF" + File.separator + "pages"
 				+ File.separator;
 		this.jsRootPath = this.projPath + "WebRoot" + File.separator + "js" + File.separator;

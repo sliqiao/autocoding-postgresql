@@ -2,6 +2,13 @@ package com.autocoding.util;
 
 import java.sql.Types;
 
+/**
+ * 
+ * @ClassName: ColumnUtil
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:14:03 PM
+ */
 public class ColumnUtil {
 
 	private ColumnUtil() {
@@ -88,7 +95,7 @@ public class ColumnUtil {
 			javaType = "Double";
 		} else if (iDataType == Types.DATE || iDataType == Types.TIME) {
 			javaType = "Date";
-		}else if (iDataType == Types.TIMESTAMP ) {
+		} else if (iDataType == Types.TIMESTAMP) {
 			javaType = "Timestamp";
 		} else if (iDataType == Types.BLOB) {
 			javaType = "byte[]";

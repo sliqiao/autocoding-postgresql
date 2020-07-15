@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.autocoding.enums.DataBaseTypeEnum;
 import com.autocoding.freemarker.FreemarkerTag;
 import com.autocoding.util.ColumnUtil;
 
@@ -59,44 +60,41 @@ public class Entity {
 		String propertyName;
 		DatabaseMetaData databaseMetaData;
 		Statement stmt = this.connection.createStatement();
-		// 取数据库产品名称sql
-		String dbName = this.connection.getMetaData().getDatabaseProductName();
-		// 判断数据库类型sql
-		String tabColumnCommentsSql = "";
-		// 获取表名注释sql
-		String userTabCommentsSql = "";
-		if (dbName.toLowerCase().indexOf("mysql") != -1) {
-			tabColumnCommentsSql = " SELECT B.COLUMN_NAME,B.COLUMN_COMMENT COMMENTS FROM INFORMATION_SCHEMA.COLUMNS B WHERE  B.TABLE_NAME='"
+		String databaseTypeCode = this.connection.getMetaData().getDatabaseProductName();
+		String columnCommentsSql = "";
+		String tableCommentsSql = "";
+		if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.MYSQL.getCode()) != -1) {
+			columnCommentsSql = " SELECT B.COLUMN_NAME,B.COLUMN_COMMENT COMMENTS FROM INFORMATION_SCHEMA.COLUMNS B WHERE  B.TABLE_NAME='"
 					+ this.tableName + "'";
-		} else if (dbName.toLowerCase().indexOf("postgresql") != -1) {
-			tabColumnCommentsSql = " SELECT a.attname AS \"COLUMN_NAME\",b.description AS \"COMMENTS\" FROM pg_class c,pg_attribute a"
+		} else if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.POSTGRE_SQL.getCode()) != -1) {
+			columnCommentsSql = " SELECT a.attname AS \"COLUMN_NAME\",b.description AS \"COMMENTS\" FROM pg_class c,pg_attribute a"
 					+ " LEFT OUTER JOIN pg_description b ON a.attrelid=b.objoid AND a.attnum = b.objsubid,pg_type t "
 					+ "WHERE c.relname = '" + this.tableName
 					+ "' and a.attnum > 0 and a.attrelid = c.oid and a.atttypid = t.oid";
-		} else if (dbName.toLowerCase().indexOf("microsoft sql server") != -1) {
+		} else if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.MICROSOFT_SQL_SERVER.getCode()) != -1) {
 			return;
-		} else if (dbName.toLowerCase().indexOf("oracle") != -1) {
-			tabColumnCommentsSql = " SELECT B.COLUMN_NAME,B.COMMENTS FROM USER_COL_COMMENTS B WHERE  B.TABLE_NAME='"
+		} else if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.ORACLE.getCode()) != -1) {
+			columnCommentsSql = " SELECT B.COLUMN_NAME,B.COMMENTS FROM USER_COL_COMMENTS B WHERE  B.TABLE_NAME='"
 					+ this.tableName + "'";
-			userTabCommentsSql = " SELECT B.TABLE_NAME,B.COMMENTS FROM USER_TAB_COMMENTS B WHERE  B.TABLE_NAME='"
+			tableCommentsSql = " SELECT B.TABLE_NAME,B.COMMENTS FROM USER_TAB_COMMENTS B WHERE  B.TABLE_NAME='"
 					+ this.tableName + "'";
 			// 获取表注释
-			ResultSet userTabCommentsSqlRS = stmt.executeQuery(userTabCommentsSql);
-			while (userTabCommentsSqlRS.next()) {
-				this.tableComments = userTabCommentsSqlRS.getString("COMMENTS");
+			ResultSet tableCommentsResultSet = stmt.executeQuery(tableCommentsSql);
+			while (tableCommentsResultSet.next()) {
+				this.tableComments = tableCommentsResultSet.getString("COMMENTS");
 			}
-		} else if (dbName.toLowerCase().indexOf("db2") != -1) {
+		} else if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.DB2.getCode()) != -1) {
 			System.out.println("没有db2查询数据库表结构SQL");
 			return;
 		}
 
 		// 获取字段注释名称
-		Map<String, String> columnComments = new HashMap<String, String>();
-		ResultSet tabColumnCommentsRS = stmt.executeQuery(tabColumnCommentsSql);
-		while (tabColumnCommentsRS.next()) {
-			columnComments.put(tabColumnCommentsRS.getString("COLUMN_NAME"), tabColumnCommentsRS.getString("COMMENTS"));
+		Map<String, String> columnComments = new HashMap<String, String>(50);
+		ResultSet columnCommentReslutSet = stmt.executeQuery(columnCommentsSql);
+		while (columnCommentReslutSet.next()) {
+			columnComments.put(columnCommentReslutSet.getString("COLUMN_NAME"), columnCommentReslutSet.getString("COMMENTS"));
 		}
-		tabColumnCommentsRS.close();
+		columnCommentReslutSet.close();
 		ResultSet columnResultSet = stmt.executeQuery("SELECT * FROM " + this.tableName + " WHERE 1 = 2 ");
 		ResultSetMetaData metaData = columnResultSet.getMetaData();
 		int columnCount = metaData.getColumnCount();

@@ -7,8 +7,15 @@ import com.autocoding.freemarker.FreemarkerUtil;
 import com.autocoding.model.CodeBuilderAnnotation;
 import com.autocoding.model.Project;
 
+/**
+ * 
+ * @ClassName: GwtModelBuilder
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:13:27 PM
+ */
 @CodeBuilderAnnotation(desc = "生成GWT Model")
-public class GwtModelBuilder extends AbsCodeBuilder {
+public class GwtModelBuilder extends BaseCodeBuilder {
 
 	public GwtModelBuilder(Project project) {
 		super(project);

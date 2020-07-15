@@ -15,15 +15,21 @@ import com.autocoding.model.Project;
  * @author 李桥
  * @version 1.0
  */
-public abstract class AbsCodeBuilder {
+public abstract class BaseCodeBuilder {
 	protected String fileoutputPath;
 	protected Project project;
 	protected Entity entity;
 	protected Map<String, Object> rootMap;
-
+   /**
+    * 输出到文件
+    * @Title: saveToFile   
+    * @param:       
+    * @return: void      
+    * @throws
+    */
 	public abstract void saveToFile();
 
-	public AbsCodeBuilder(Project project) {
+	public BaseCodeBuilder(Project project) {
 		this.project = project;
 		this.entity = this.project.getEntity();
 		this.rootMap = this.getRootMap();
@@ -34,17 +40,17 @@ public abstract class AbsCodeBuilder {
 	}
 
 	private Map<String, Object> getRootMap() {
-		Map<String, Object> rootMap = new HashMap<String, Object>();
+		Map<String, Object> rootMap = new HashMap<String, Object>(10);
 		rootMap.put(FreemarkerTag.Common.AUTHOR, this.project.getAuthor());
 		rootMap.put(FreemarkerTag.Common.PROJECT, this.project);
 		rootMap.put(FreemarkerTag.Common.DATE, this.project.getDateString());
-		rootMap.put(FreemarkerTag.Common.Entity, this.entity);
+		rootMap.put(FreemarkerTag.Common.ENTITY, this.entity);
 		rootMap.put(FreemarkerTag.Common.PACKAGE, this.project.getRootPackage());
 		rootMap.put(FreemarkerTag.Common.PK_FIELD, this.entity.getPrimaryKeyField());
 		rootMap.put(FreemarkerTag.Common.FIELDS, this.entity.getFields());
-		rootMap.put(FreemarkerTag.Common.EntityBeanName, this.entity.getEntityBeanName());
+		rootMap.put(FreemarkerTag.Common.ENTITY_BEAN_NAME, this.entity.getEntityBeanName());
 		rootMap.put(FreemarkerTag.Common.PREFIX, this.project.getPrefix());
-		rootMap.put(FreemarkerTag.Common.EntityName, this.entity.getEntityName());
+		rootMap.put(FreemarkerTag.Common.ENTITY_NAME, this.entity.getEntityName());
 		return rootMap;
 	}
 

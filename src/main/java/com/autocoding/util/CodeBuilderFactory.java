@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.autocoding.codebuilder.AbsCodeBuilder;
+import com.autocoding.codebuilder.BaseCodeBuilder;
 import com.autocoding.model.Project;
 
 /**
@@ -19,11 +19,11 @@ import com.autocoding.model.Project;
 public class CodeBuilderFactory {
 	private static Logger s_logger = LoggerFactory.getLogger(CodeBuilderFactory.class);
 
-	public static AbsCodeBuilder createBuilder(Class clazz, Project project) {
-		AbsCodeBuilder absCodeBuilder = null;
+	public static BaseCodeBuilder createBuilder(Class clazz, Project project) {
+		BaseCodeBuilder absCodeBuilder = null;
 		try {
 			Constructor<?> constructor = clazz.getConstructor(Project.class);
-			absCodeBuilder = (AbsCodeBuilder) constructor.newInstance(project);
+			absCodeBuilder = (BaseCodeBuilder) constructor.newInstance(project);
 		} catch (Exception e) {
 			CodeBuilderFactory.s_logger.error("构建对象异常：", clazz.getName());
 		}

@@ -16,7 +16,7 @@ import com.autocoding.model.Project;
  * @version 1.0
  */
 @CodeBuilderAnnotation(desc = "按照自己的模板生成代码")
-public class YourBuilder extends AbsCodeBuilder {
+public class YourBuilder extends BaseCodeBuilder {
 
 	public YourBuilder(Project project) {
 		super(project);

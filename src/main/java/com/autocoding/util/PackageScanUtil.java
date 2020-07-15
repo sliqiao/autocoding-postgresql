@@ -12,6 +12,13 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * 
+ * @ClassName: PackageScanUtil
+ * @Description:TODO(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 15, 2020 2:13:51 PM
+ */
 public class PackageScanUtil {
 
 	private PackageScanUtil() {
@@ -90,7 +97,8 @@ public class PackageScanUtil {
 			} else {
 				String className = file.getName().substring(0, file.getName().length() - 6);
 				try {
-					classes.add(Thread.currentThread().getContextClassLoader().loadClass(packageName + '.' + className));
+					classes.add(
+							Thread.currentThread().getContextClassLoader().loadClass(packageName + '.' + className));
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
