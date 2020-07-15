@@ -2,15 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.common</groupId>
-	<artifactId>autocoding-postgresql</artifactId>
+	<artifactId>autocoding-postgresql-tykj</artifactId>
 	<version>1.0</version>
-	<description>代码自动生成工具-针对天有科技代码进行适配</description>
-	<prerequisites>
-	目前支持的数据库为：
-	1、Oracle
-	2、Mysql
-	3、Postgresql
-	</prerequisites>
+	<description>代码自动生成工具-针对天有科技代码进行适配
+		目前支持的数据库为：Oracle、Mysql、Postgresql
+	</description>
 	<developers>
 		<developer>
 			<name>李桥</name>
@@ -22,7 +18,7 @@
 	</developers>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<main.class>com.autocoding.main.AutoCodingMain</main.class>
+		<main.class>com.autocoding.AutoCodingApplication</main.class>
 	</properties>
 	<dependencies>
 		<dependency>
