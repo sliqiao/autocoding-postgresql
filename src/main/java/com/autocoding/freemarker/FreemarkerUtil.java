@@ -13,7 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.autocoding.main.AutoCodingMain;
+import com.autocoding.AutoCodingApplication;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -28,7 +28,7 @@ import freemarker.template.Template;
  * @log:2016年2月2日 下午2:38:12 liqiao create
  */
 public final class FreemarkerUtil {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingMain.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingApplication.class);
 	/** 模板文件编码. */
 	private static final String TEMPLATE_FILE_ENCODING = "UTF-8";
 	/** 导出文件编码 . */

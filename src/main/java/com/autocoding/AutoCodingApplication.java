@@ -1,4 +1,4 @@
-package com.autocoding.main;
+package com.autocoding;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,9 +25,9 @@ import com.autocoding.util.CodeBuilderScanUtil;
  * @author: QiaoLi
  * @date: Jul 15, 2020 2:14:16 PM
  */
-public class AutoCodingMain {
+public class AutoCodingApplication {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingMain.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingApplication.class);
 	private static final String DEFAULT_ENCODING = "utf-8";
 	private Connection conn;
 	private Properties props;
@@ -39,12 +39,12 @@ public class AutoCodingMain {
 	private Project project;
 	private String tablesName;
 
-	public AutoCodingMain() {
+	public AutoCodingApplication() {
 		try {
 			String rootdir = System.getProperty("user.dir");
 			this.props = new Properties();
 			this.props.load(new InputStreamReader(new FileInputStream(rootdir + File.separator + "config.properties"),
-					AutoCodingMain.DEFAULT_ENCODING));
+					AutoCodingApplication.DEFAULT_ENCODING));
 			this.jdbcDriver = this.props.getProperty(ConfigConstant.C3P0_DRIVERCLASS);
 			this.jdbcUrl = this.props.getProperty(ConfigConstant.C3P0_JDBCURL);
 			this.userName = this.props.getProperty(ConfigConstant.C3P0_USER);
@@ -58,7 +58,7 @@ public class AutoCodingMain {
 			String prefixWithSharp = prefix.replace(".", "/");
 			this.project.setPrefixWithSharp(prefixWithSharp);
 		} catch (Exception e) {
-			AutoCodingMain.LOGGER.error("执行AutoCodingMain.AutoCodingMain()异常:", e);
+			AutoCodingApplication.LOGGER.error("执行AutoCodingMain.AutoCodingMain()异常:", e);
 		}
 	}
 
@@ -68,12 +68,12 @@ public class AutoCodingMain {
 
 			this.conn = DriverManager.getConnection(this.jdbcUrl, this.userName, this.password);
 
-			AutoCodingMain.LOGGER.info("---------数据库连接成功--------------");
+			AutoCodingApplication.LOGGER.info("---------数据库连接成功--------------");
 			return true;
 		} catch (Exception e) {
-			AutoCodingMain.LOGGER.error("执行AutoCodingMain.connect()异常:", e);
+			AutoCodingApplication.LOGGER.error("执行AutoCodingMain.connect()异常:", e);
 		}
-		AutoCodingMain.LOGGER.info("----------数据库连接失败--------------");
+		AutoCodingApplication.LOGGER.info("----------数据库连接失败--------------");
 
 		return false;
 	}
@@ -81,10 +81,10 @@ public class AutoCodingMain {
 	private boolean disconnect() {
 		try {
 			this.conn.close();
-			AutoCodingMain.LOGGER.info("----------数据库断开成功--------------");
+			AutoCodingApplication.LOGGER.info("----------数据库断开成功--------------");
 			return true;
 		} catch (Exception e) {
-			AutoCodingMain.LOGGER.error("----------数据库断开失败--------------", e);
+			AutoCodingApplication.LOGGER.error("----------数据库断开失败--------------", e);
 		}
 		return false;
 	}
@@ -92,9 +92,9 @@ public class AutoCodingMain {
 	public void run() {
 		String[] names = this.tablesName.split(",");
 		for (String name : names) {
-			AutoCodingMain.LOGGER.info("---------开始生成表[" + name + "]的代码--------------");
+			AutoCodingApplication.LOGGER.info("---------开始生成表[" + name + "]的代码--------------");
 			this.run(name);
-			AutoCodingMain.LOGGER.info("---------完成生成表[" + name + "]的代码--------------");
+			AutoCodingApplication.LOGGER.info("---------完成生成表[" + name + "]的代码--------------");
 		}
 	}
 
@@ -108,20 +108,20 @@ public class AutoCodingMain {
 			Set<Class<?>> codeBuilderSet = CodeBuilderScanUtil.scan();
 			for (Class<?> codeBuilderClass : codeBuilderSet) {
 				codeBuilder = CodeBuilderFactory.createBuilder(codeBuilderClass, this.project);
-				AutoCodingMain.LOGGER
+				AutoCodingApplication.LOGGER
 						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【开始】");
 				codeBuilder.saveToFile();
-				AutoCodingMain.LOGGER
+				AutoCodingApplication.LOGGER
 						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【结束】");
 			}
 		} catch (Exception e) {
-			AutoCodingMain.LOGGER.error("执行AutoCodingMain.run()异常：", e);
+			AutoCodingApplication.LOGGER.error("执行AutoCodingMain.run()异常：", e);
 
 		}
 	}
 
 	public static void main(String[] args) {
-		AutoCodingMain autoCodingMain = new AutoCodingMain();
+		AutoCodingApplication autoCodingMain = new AutoCodingApplication();
 		autoCodingMain.connect();
 		autoCodingMain.run();
 		autoCodingMain.disconnect();

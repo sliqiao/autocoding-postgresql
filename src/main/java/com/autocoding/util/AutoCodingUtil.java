@@ -1,4 +1,4 @@
-package com.autocoding.api;
+package com.autocoding.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,9 +16,6 @@ import com.autocoding.codebuilder.BaseCodeBuilder;
 import com.autocoding.constant.ConfigConstant;
 import com.autocoding.model.Entity;
 import com.autocoding.model.Project;
-import com.autocoding.util.CodeBuilderFactory;
-import com.autocoding.util.CodeBuilderScanUtil;
-import com.autocoding.util.FileCompressUtil;
 
 /**
  * 
