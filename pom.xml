@@ -4,7 +4,7 @@
 	<groupId>com.github.common</groupId>
 	<artifactId>autocoding-postgresql</artifactId>
 	<version>1.0</version>
-	<description>代码自动生成工具</description>
+	<description>代码自动生成工具-针对天有科技代码进行适配</description>
 	<prerequisites>
 	目前支持的数据库为：
 	1、Oracle

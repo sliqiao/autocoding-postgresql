@@ -1,0 +1,18 @@
+ 
+package ${package}.service;
+
+import ${package}.model.${entity.entityName};
+import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+/**
+ * @title 本代码由Autocoding生成
+ * @author  ${author}
+ * @date    ${date}
+ * @description:  
+ * @log:    ${date}  ${author}  新建
+ */
+@Repository
+public interface ${entity.entityName}Repo extends JpaRepository<${entity.entityName}, ${pkField.propertyType}> {
+
+	 
+}
