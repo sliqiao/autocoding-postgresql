@@ -1,6 +1,9 @@
 package com.autocoding.codebuilder;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.autocoding.freemarker.FreemarkerTag;
@@ -38,7 +41,18 @@ public abstract class BaseCodeBuilder {
 	public String getFileoutputPath() {
 		return this.fileoutputPath;
 	}
-
+	public void createEmptyDir() {
+		File tempDir=null;
+		//生成vo、dto、constant、enums
+		List<String> dirList=Arrays.asList("vo","dto","constant","enums");
+		for(String dirName:dirList){
+			tempDir=new File(this.project.getRootPackagePath()+File.separator+dirName);
+			if(!tempDir.exists()){
+				tempDir.mkdirs();
+			}
+		}
+		 
+	}
 	private Map<String, Object> getRootMap() {
 		Map<String, Object> rootMap = new HashMap<String, Object>(10);
 		rootMap.put(FreemarkerTag.Common.AUTHOR, this.project.getAuthor());

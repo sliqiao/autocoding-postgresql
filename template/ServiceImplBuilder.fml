@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
  * @author  ${author}
  * @date    ${date}
  * @description:  
- * @log:    ${date}  ${author}  新建
  */
 @Slf4j
 @Service

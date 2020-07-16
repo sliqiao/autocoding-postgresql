@@ -7,7 +7,6 @@ import ${package}.model.${entityName};
  * @author  ${author}
  * @date    ${date}
  * @description:  
- * @log:    ${date}  ${author}  新建
  */
 public interface ${entityName}Service {
   

@@ -1,5 +1,5 @@
  
-package ${package}.service;
+package ${package}.dao;
 
 import ${package}.model.${entity.entityName};
 import org.springframework.stereotype.Repository;
@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author  ${author}
  * @date    ${date}
  * @description:  
- * @log:    ${date}  ${author}  新建
  */
 @Repository
 public interface ${entity.entityName}Repo extends JpaRepository<${entity.entityName}, ${pkField.propertyType}> {

@@ -90,11 +90,11 @@ public class AutoCodingApplication {
 	}
 
 	public void run() {
-		String[] names = this.tablesName.split(",");
-		for (String name : names) {
-			AutoCodingApplication.LOGGER.info("---------开始生成表[" + name + "]的代码--------------");
-			this.run(name);
-			AutoCodingApplication.LOGGER.info("---------完成生成表[" + name + "]的代码--------------");
+		String[] tableNameArray = this.tablesName.split(",");
+		for (String tableName : tableNameArray) {
+			AutoCodingApplication.LOGGER.info("---------开始生成表[" + tableName + "]的代码--------------");
+			this.run(tableName);
+			AutoCodingApplication.LOGGER.info("---------完成生成表[" + tableName + "]的代码--------------");
 		}
 	}
 
@@ -110,21 +110,22 @@ public class AutoCodingApplication {
 				codeBuilder = CodeBuilderFactory.createBuilder(codeBuilderClass, this.project);
 				AutoCodingApplication.LOGGER
 						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【开始】");
+				codeBuilder.createEmptyDir();
 				codeBuilder.saveToFile();
 				AutoCodingApplication.LOGGER
 						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【结束】");
 			}
 		} catch (Exception e) {
-			AutoCodingApplication.LOGGER.error("执行AutoCodingMain.run()异常：", e);
+			AutoCodingApplication.LOGGER.error("执行AutoCodingApplication.run()异常：", e);
 
 		}
 	}
 
 	public static void main(String[] args) {
-		AutoCodingApplication autoCodingMain = new AutoCodingApplication();
-		autoCodingMain.connect();
-		autoCodingMain.run();
-		autoCodingMain.disconnect();
+		AutoCodingApplication application = new AutoCodingApplication();
+		application.connect();
+		application.run();
+		application.disconnect();
 	}
 
 }

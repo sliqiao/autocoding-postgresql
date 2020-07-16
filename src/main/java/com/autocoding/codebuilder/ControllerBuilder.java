@@ -9,17 +9,17 @@ import com.autocoding.model.Project;
 
 /**
  * 
- * @ClassName: MybatisMapperBuilder
+ * @ClassName: ServiceImplBuilder
  * @Description:TODO(这里用一句话描述这个类的作用)
  * @author: QiaoLi
- * @date: Jul 15, 2020 2:14:34 PM
+ * @date: Jul 15, 2020 2:14:22 PM
  */
-@CodeBuilderAnnotation(desc = "生成dao接口")
-public class JpaRepositoryBuilder extends BaseCodeBuilder {
+@CodeBuilderAnnotation(desc = "生成Controller文件")
+public class ControllerBuilder extends BaseCodeBuilder {
 
-	public JpaRepositoryBuilder(Project project) {
+	public ControllerBuilder(Project project) {
 		super(project);
-		this.fileoutputPath = this.project.getDaoPath() + this.entity.getEntityName() + "Repo.java";
+		super.fileoutputPath = super.project.getControllerPath() + super.entity.getEntityName() + "Controller.java";
 
 	}
 

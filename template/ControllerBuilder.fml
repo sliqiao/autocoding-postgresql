@@ -1,0 +1,30 @@
+ 
+package ${package}.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import ${package}.model.${entityName};
+import ${package}.service.${entityName}Service;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * @title 本代码由Autocoding生成
+ * @author  ${author}
+ * @date    ${date}
+ * @description:  
+ */
+@Slf4j
+@RestController
+@RequestMapping("/${entityBeanName}")
+public class ${entityName}Controller {
+
+   @Autowired
+   private ${entityName}Service ${entityBeanName}Service; 
+ 
+   @PostMapping(value = "test")
+	public ResultModel<String> queryClassWrongQuesByTaskId(HttpServletRequest request) {
+	    return  ResultModel.newResultModel(null);
+	}
+}

@@ -43,9 +43,12 @@ public class Project {
 
 	private final String servicePath;
 	private final String servicePackage;
+	private final String daoPath;
+	private final String daoPackage;
 	private final String serviceImplPath;
 	private final String serviceImplPackage;
-
+	private final String controllerPath;
+	private final String controllerPackage;
 	private String outputPath;
 
 	private String templatePath;
@@ -89,11 +92,17 @@ public class Project {
 		this.actionPath = this.rootPackagePath + "controller" + File.separator;
 		this.actionPackage = this.rootPackage + ".controller";
 
+		this.daoPath = this.rootPackagePath + "dao" + File.separator;
+		this.daoPackage = this.rootPackage + ".dao";
+		
 		this.servicePath = this.rootPackagePath + "service" + File.separator;
 		this.servicePackage = this.rootPackage + ".service";
 
 		this.serviceImplPath = this.servicePath + "impl" + File.separator;
 		this.serviceImplPackage = this.servicePackage + ".impl";
+		
+		this.controllerPath = this.rootPackagePath+ "controller" + File.separator;
+		this.controllerPackage = this.rootPackage  + ".controller";
 
 		this.templatePath = this.projPath + "template" + File.separator;
 
@@ -234,5 +243,22 @@ public class Project {
 	public void setUserTableSpace(String userTableSpace) {
 		this.userTableSpace = userTableSpace;
 	}
+
+	public String getControllerPath() {
+		return controllerPath;
+	}
+
+	public String getControllerPackage() {
+		return controllerPackage;
+	}
+
+	public String getDaoPath() {
+		return daoPath;
+	}
+
+	public String getDaoPackage() {
+		return daoPackage;
+	}
+	
 
 }
