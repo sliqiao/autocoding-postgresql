@@ -17,6 +17,8 @@ import com.autocoding.constant.ConfigConstant;
 import com.autocoding.model.Entity;
 import com.autocoding.model.Project;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 
  * @ClassName: AutoCodingUtil
@@ -24,9 +26,9 @@ import com.autocoding.model.Project;
  * @author: QiaoLi
  * @date: Jul 15, 2020 2:13:06 PM
  */
+@Slf4j
 public class AutoCodingUtil {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingUtil.class);
 	private Connection conn;
 	private String jdbcDriver;
 	private String jdbcUrl;
@@ -65,7 +67,7 @@ public class AutoCodingUtil {
 			String prefixWithSharp = prefix.replace(".", "/");
 			this.project.setPrefixWithSharp(prefixWithSharp);
 		} catch (Exception e) {
-			AutoCodingUtil.LOGGER.error("执行AutoCodingMain.AutoCodingMain()异常:", e);
+			log.error("执行AutoCodingMain.AutoCodingMain()异常:", e);
 		}
 	}
 
@@ -75,12 +77,12 @@ public class AutoCodingUtil {
 
 			this.conn = DriverManager.getConnection(this.jdbcUrl, this.userName, this.password);
 
-			AutoCodingUtil.LOGGER.info("---------数据库连接成功--------------");
+			log.info("---------数据库连接成功--------------");
 			return true;
 		} catch (Exception e) {
-			AutoCodingUtil.LOGGER.error("执行AutoCodingMain.connect()异常:", e);
+			log.error("执行AutoCodingMain.connect()异常:", e);
 		}
-		AutoCodingUtil.LOGGER.info("----------数据库连接失败--------------");
+		log.info("----------数据库连接失败--------------");
 
 		return false;
 	}
@@ -88,10 +90,10 @@ public class AutoCodingUtil {
 	private boolean disconnect() {
 		try {
 			this.conn.close();
-			AutoCodingUtil.LOGGER.info("----------数据库断开成功--------------");
+			log.info("----------数据库断开成功--------------");
 			return true;
 		} catch (Exception e) {
-			AutoCodingUtil.LOGGER.error("----------数据库断开失败--------------", e);
+			log.error("----------数据库断开失败--------------", e);
 		}
 		return false;
 	}
@@ -99,9 +101,9 @@ public class AutoCodingUtil {
 	public void run() {
 		String[] names = this.tablesName.split(",");
 		for (String name : names) {
-			AutoCodingUtil.LOGGER.info("---------开始生成表[" + name + "]的代码--------------");
+			log.info("---------开始生成表[" + name + "]的代码--------------");
 			this.run(name);
-			AutoCodingUtil.LOGGER.info("---------完成生成表[" + name + "]的代码--------------");
+			log.info("---------完成生成表[" + name + "]的代码--------------");
 		}
 	}
 
@@ -115,14 +117,14 @@ public class AutoCodingUtil {
 			Set<Class<?>> codeBuilderSet = CodeBuilderScanUtil.scan();
 			for (Class<?> codeBuilderClass : codeBuilderSet) {
 				codeBuilder = CodeBuilderFactory.createBuilder(codeBuilderClass, this.project);
-				AutoCodingUtil.LOGGER
+				log
 						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【开始】");
 				codeBuilder.saveToFile();
-				AutoCodingUtil.LOGGER
+				log
 						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【结束】");
 			}
 		} catch (Exception e) {
-			AutoCodingUtil.LOGGER.error("执行AutoCodingMain.run()异常：", e);
+			log.error("执行AutoCodingMain.run()异常：", e);
 
 		}
 	}

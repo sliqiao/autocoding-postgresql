@@ -2,11 +2,11 @@ package com.autocoding.util;
 
 import java.lang.reflect.Constructor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.autocoding.codebuilder.BaseCodeBuilder;
 import com.autocoding.model.Project;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CodeBuilder工厂
@@ -15,9 +15,8 @@ import com.autocoding.model.Project;
  * @author 李桥
  * @version 1.0
  */
-
+@Slf4j
 public class CodeBuilderFactory {
-	private static Logger s_logger = LoggerFactory.getLogger(CodeBuilderFactory.class);
 
 	public static BaseCodeBuilder createBuilder(Class clazz, Project project) {
 		BaseCodeBuilder absCodeBuilder = null;
@@ -25,7 +24,7 @@ public class CodeBuilderFactory {
 			Constructor<?> constructor = clazz.getConstructor(Project.class);
 			absCodeBuilder = (BaseCodeBuilder) constructor.newInstance(project);
 		} catch (Exception e) {
-			CodeBuilderFactory.s_logger.error("构建对象异常：", clazz.getName());
+			log.error("构建对象异常：", clazz.getName());
 		}
 		return absCodeBuilder;
 	}

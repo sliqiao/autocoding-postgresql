@@ -1,9 +1,9 @@
 package com.autocoding.container;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.autocoding.freemarker.FreemarkerTag;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 代码构建器容器
@@ -12,13 +12,12 @@ import com.autocoding.freemarker.FreemarkerTag;
  * @author 李桥
  * @version 1.0
  */
-
+@Slf4j
 public class CodeBuilderContainer {
-	private static Logger s_logger = LoggerFactory.getLogger(CodeBuilderContainer.class);
 
 	public static String getTempleateFileName(Class<?> codeBuilderClass) {
 		if (null == codeBuilderClass) {
-			CodeBuilderContainer.s_logger.error("codeBuilderClass不能为空!");
+			log.error("codeBuilderClass不能为空!");
 		}
 		return codeBuilderClass.getSimpleName() + FreemarkerTag.POSTFIX;
 

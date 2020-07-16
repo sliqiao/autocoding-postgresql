@@ -17,7 +17,6 @@ import com.autocoding.model.CodeBuilderAnnotation;
  */
 
 public class CodeBuilderScanUtil {
-	private static Logger s_logger = LoggerFactory.getLogger(CodeBuilderScanUtil.class);
 
 	private CodeBuilderScanUtil() {
 	}

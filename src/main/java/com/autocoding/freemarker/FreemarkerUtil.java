@@ -17,6 +17,7 @@ import com.autocoding.AutoCodingApplication;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Word导出工具：按照指定格式的Word导出.
@@ -27,8 +28,8 @@ import freemarker.template.Template;
  * @description: TODO
  * @log:2016年2月2日 下午2:38:12 liqiao create
  */
+@Slf4j
 public final class FreemarkerUtil {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingApplication.class);
 	/** 模板文件编码. */
 	private static final String TEMPLATE_FILE_ENCODING = "UTF-8";
 	/** 导出文件编码 . */
@@ -62,13 +63,13 @@ public final class FreemarkerUtil {
 		try {
 			File templateDirectoryFile = new File(templateDirectory);
 			if (!templateDirectoryFile.exists()) {
-				FreemarkerUtil.LOGGER.error("freemarker模板目录不存在:" + templateDirectory);
+				log.error("freemarker模板目录不存在:" + templateDirectory);
 				throw new RuntimeException("freemarker模板目录不存在:" + templateDirectory);
 
 			}
 			File templateFile = new File(templateDirectoryFile, templateFileName);
 			if (!templateFile.exists()) {
-				FreemarkerUtil.LOGGER.error("freemarker模板文件不存在:" + templateFileName);
+				log.error("freemarker模板文件不存在:" + templateFileName);
 				throw new RuntimeException("freemarker模板文件不存在:" + templateFileName);
 
 			}
@@ -80,8 +81,8 @@ public final class FreemarkerUtil {
 			if (!outFile.getParentFile().exists()) {
 				outFile.getParentFile().mkdirs();
 			}
-			Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile),
-					FreemarkerUtil.FILE_OUTPUT_ENCODING));
+			Writer writer = new BufferedWriter(
+					new OutputStreamWriter(new FileOutputStream(outFile), FreemarkerUtil.FILE_OUTPUT_ENCODING));
 			template.process(data, writer);
 			writer.flush();
 			writer.close();
@@ -110,13 +111,13 @@ public final class FreemarkerUtil {
 			configuration.setDefaultEncoding(FreemarkerUtil.TEMPLATE_FILE_ENCODING);
 			File templateDirectoryFile = new File(templateDirectory);
 			if (!templateDirectoryFile.exists()) {
-				FreemarkerUtil.LOGGER.error("freemarker模板目录不存在:" + templateDirectory);
+				log.error("freemarker模板目录不存在:" + templateDirectory);
 				return null;
 			}
 			configuration.setDirectoryForTemplateLoading(templateDirectoryFile);
 			Template template = configuration.getTemplate(templateFileName);
 			if (StringUtils.isEmpty(templateFileName) || template == null) {
-				FreemarkerUtil.LOGGER.error("freemarker模板目录不存在:" + templateDirectory);
+				log.error("freemarker模板目录不存在:" + templateDirectory);
 				return null;
 			}
 			StringWriter writer = new StringWriter(1024);
@@ -126,7 +127,7 @@ public final class FreemarkerUtil {
 			writer.close();
 			return stringBuffer.toString();
 		} catch (Exception e) {
-			FreemarkerUtil.LOGGER.error("异常：" + e.toString());
+			log.error("异常：" + e.toString());
 			return null;
 		}
 
@@ -148,7 +149,8 @@ public final class FreemarkerUtil {
 		String templateDirectory = "F://txt_dir";
 		String templateFileName = "info_excel.ftl";
 		String fileoutputPath = "F://txt_dir/info.xls";
-		// FreemakerUtil.fileExport(data, templateDirectory, templateFileName,fileoutputPath);
+		// FreemakerUtil.fileExport(data, templateDirectory,
+		// templateFileName,fileoutputPath);
 		String s = FreemarkerUtil.exportString(data, templateDirectory, templateFileName);
 		System.err.println("s:" + s);
 

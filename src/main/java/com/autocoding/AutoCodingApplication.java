@@ -8,6 +8,9 @@ import java.sql.DriverManager;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.management.RuntimeErrorException;
+
+import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +20,9 @@ import com.autocoding.model.Entity;
 import com.autocoding.model.Project;
 import com.autocoding.util.CodeBuilderFactory;
 import com.autocoding.util.CodeBuilderScanUtil;
+import com.autododing.ContextedExceptionTest.ContextedExceptionTest;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
@@ -25,9 +31,9 @@ import com.autocoding.util.CodeBuilderScanUtil;
  * @author: QiaoLi
  * @date: Jul 15, 2020 2:14:16 PM
  */
+@Slf4j
 public class AutoCodingApplication {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AutoCodingApplication.class);
 	private static final String DEFAULT_ENCODING = "utf-8";
 	private Connection conn;
 	private Properties props;
@@ -58,7 +64,8 @@ public class AutoCodingApplication {
 			String prefixWithSharp = prefix.replace(".", "/");
 			this.project.setPrefixWithSharp(prefixWithSharp);
 		} catch (Exception e) {
-			AutoCodingApplication.LOGGER.error("执行AutoCodingMain.AutoCodingMain()异常:", e);
+			e = new ContextedRuntimeException(e).addContextValue("user.dir", tablesName);
+			log.error("执行AutoCodingMain.AutoCodingMain()异常:", e);
 		}
 	}
 
@@ -68,12 +75,12 @@ public class AutoCodingApplication {
 
 			this.conn = DriverManager.getConnection(this.jdbcUrl, this.userName, this.password);
 
-			AutoCodingApplication.LOGGER.info("---------数据库连接成功--------------");
+			log.info("---------数据库连接成功--------------");
 			return true;
 		} catch (Exception e) {
-			AutoCodingApplication.LOGGER.error("执行AutoCodingMain.connect()异常:", e);
+			log.error("执行AutoCodingMain.connect()异常:", e);
 		}
-		AutoCodingApplication.LOGGER.info("----------数据库连接失败--------------");
+		log.info("----------数据库连接失败--------------");
 
 		return false;
 	}
@@ -81,10 +88,10 @@ public class AutoCodingApplication {
 	private boolean disconnect() {
 		try {
 			this.conn.close();
-			AutoCodingApplication.LOGGER.info("----------数据库断开成功--------------");
+			log.info("----------数据库断开成功--------------");
 			return true;
 		} catch (Exception e) {
-			AutoCodingApplication.LOGGER.error("----------数据库断开失败--------------", e);
+			log.error("----------数据库断开失败--------------", e);
 		}
 		return false;
 	}
@@ -92,9 +99,9 @@ public class AutoCodingApplication {
 	public void run() {
 		String[] tableNameArray = this.tablesName.split(",");
 		for (String tableName : tableNameArray) {
-			AutoCodingApplication.LOGGER.info("---------开始生成表[" + tableName + "]的代码--------------");
+			log.info("---------开始生成表[" + tableName + "]的代码--------------");
 			this.run(tableName);
-			AutoCodingApplication.LOGGER.info("---------完成生成表[" + tableName + "]的代码--------------");
+			log.info("---------完成生成表[" + tableName + "]的代码--------------");
 		}
 	}
 
@@ -108,15 +115,13 @@ public class AutoCodingApplication {
 			Set<Class<?>> codeBuilderSet = CodeBuilderScanUtil.scan();
 			for (Class<?> codeBuilderClass : codeBuilderSet) {
 				codeBuilder = CodeBuilderFactory.createBuilder(codeBuilderClass, this.project);
-				AutoCodingApplication.LOGGER
-						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【开始】");
+				log.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【开始】");
 				codeBuilder.createEmptyDir();
 				codeBuilder.saveToFile();
-				AutoCodingApplication.LOGGER
-						.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【结束】");
+				log.info("正在对【" + tableName + "】生成文件【" + codeBuilder.getFileoutputPath() + "】 ---【结束】");
 			}
 		} catch (Exception e) {
-			AutoCodingApplication.LOGGER.error("执行AutoCodingApplication.run()异常：", e);
+			log.error("执行AutoCodingApplication.run()异常：", e);
 
 		}
 	}
