@@ -5,6 +5,13 @@ import org.apache.commons.lang3.exception.ContextedRuntimeException;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 
+ * @ClassName: ContextedExceptionTest
+ * @Description:(这里用一句话描述这个类的作用)
+ * @author: QiaoLi
+ * @date: Jul 21, 2020 11:25:46 AM
+ */
 @Slf4j
 public class ContextedExceptionTest {
 	public static void main(String[] args) {

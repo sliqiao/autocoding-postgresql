@@ -44,7 +44,7 @@ public abstract class BaseCodeBuilder {
 	public void createEmptyDir() {
 		File tempDir=null;
 		//生成vo、dto、constant、enums
-		List<String> dirList=Arrays.asList("vo","dto","constant","enums");
+		List<String> dirList=Arrays.asList("misc","domain","model","vo","dto","constant","enums","aop","config","httpclient","util");
 		for(String dirName:dirList){
 			tempDir=new File(this.project.getRootPackagePath()+File.separator+dirName);
 			if(!tempDir.exists()){

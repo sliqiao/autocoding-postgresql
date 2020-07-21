@@ -1,0 +1,20 @@
+/**
+ * <b>代码生成工具自动为你生成以下包:</b><br>
+ * misc:杂项包<br>
+ * aop:切面包<br>
+ * config:配置包<br>
+ * constant:常量包<br>
+ * controller:控制器包<br>
+ * dao:dao包<br>
+ * domain:domain包<br>
+ * vo:view object包<br>
+ * model:model包<br>
+ * dto:dto包<br>
+ * enums:枚举类包<br>
+ * httpclient:http客户端包<br>
+ * service:service包<br>
+ * impl:service实现包<br>
+ * util:工具类包<br>
+ */
+package ${project.rootPackage};
+  

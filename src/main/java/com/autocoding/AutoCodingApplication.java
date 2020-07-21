@@ -8,11 +8,8 @@ import java.sql.DriverManager;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.management.RuntimeErrorException;
 
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.autocoding.codebuilder.BaseCodeBuilder;
 import com.autocoding.constant.ConfigConstant;
@@ -20,7 +17,6 @@ import com.autocoding.model.Entity;
 import com.autocoding.model.Project;
 import com.autocoding.util.CodeBuilderFactory;
 import com.autocoding.util.CodeBuilderScanUtil;
-import com.autododing.ContextedExceptionTest.ContextedExceptionTest;
 
 import lombok.extern.slf4j.Slf4j;
 

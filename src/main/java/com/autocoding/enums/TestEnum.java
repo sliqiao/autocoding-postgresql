@@ -9,22 +9,16 @@ import java.util.Objects;
  * @author: QiaoLi
  * @date: Jul 15, 2020 2:31:31 PM
  */
-public enum DataBaseTypeEnum implements BaseEnum<String, DataBaseTypeEnum> {
+public enum TestEnum implements BaseEnum<Integer, TestEnum> {
 	/** mysql */
-	MYSQL("mysql", "MYSQL"),
+	MYSQL(1, "MYSQL"),
 	/** postgresql */
-	POSTGRE_SQL("postgresql", "POSTGRE_SQL"),
-	/** microsoft sql server */
-	MICROSOFT_SQL_SERVER("microsoft sql server", "MICROSOFT_SQL_SERVER"),
-	/** oracle */
-	ORACLE("oracle", "ORACLE"),
-	/** db2 */
-	DB2("db2", "DB2");
-	private String code;
+	POSTGRE_SQL(2, "POSTGRE_SQL");
+	private Integer code;
 	private String name;
 
 	@Override
-	public String getCode() {
+	public Integer getCode() {
 		return code;
 	}
 
@@ -32,17 +26,17 @@ public enum DataBaseTypeEnum implements BaseEnum<String, DataBaseTypeEnum> {
 		return name;
 	}
 
-	private DataBaseTypeEnum(String code, String name) {
+	private TestEnum(Integer code, String name) {
 		this.code = code;
 		this.name = name;
 	}
 
 	@Override
-	public DataBaseTypeEnum parseByCode(String code) {
+	public TestEnum parseByCode(Integer code) {
 		if (null == code || code.equals("")) {
 			return null;
 		}
-		for (DataBaseTypeEnum baseEnum : DataBaseTypeEnum.values()) {
+		for (TestEnum baseEnum : TestEnum.values()) {
 			if (Objects.equals(code, baseEnum.getCode())) {
 				return baseEnum;
 			}
