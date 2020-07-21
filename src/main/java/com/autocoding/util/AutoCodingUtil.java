@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 
  * @ClassName: AutoCodingUtil
- * @Description:TODO(这里用一句话描述这个类的作用)
+ * @Description: (这里用一句话描述这个类的作用)
  * @author: QiaoLi
  * @date: Jul 15, 2020 2:13:06 PM
  */
@@ -152,8 +152,7 @@ public class AutoCodingUtil {
 		try {
 			org.apache.commons.io.FileUtils.deleteDirectory(new File(autoCodingUtil.project.getOutputPath()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("IO异常",e);
 		}
 
 	}

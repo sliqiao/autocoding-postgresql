@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author liqiao
  * @since JDK 1.6
  * @version 1.0
- * @description: TODO
+ * @description:  
  * @log:2016年2月2日 下午2:38:12 liqiao create
  */
 @Slf4j

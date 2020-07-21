@@ -6,7 +6,7 @@ package com.autocoding.freemarker;
  * @author liqiao
  * @since JDK 1.6
  * @version 1.0
- * @description: TODO
+ * @description:  
  * @log:2016年5月6日 上午9:25:34 liqiao create
  */
 public interface FreemarkerTag {

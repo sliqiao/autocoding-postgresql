@@ -13,7 +13,7 @@ import org.apache.tools.ant.types.FileSet;
  * @author liqiao
  * @since JDK 1.6
  * @version 1.0
- * @description: TODO
+ * @description:  
  * @log:2016年6月4日 上午10:39:28 liqiao create
  */
 public class FileCompressUtil {
