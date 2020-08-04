@@ -5,7 +5,7 @@ import org.apache.commons.lang3.EnumUtils;
 public class BaseEnumUtil {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static <EnumType, CodeType> EnumType parseByCode(Class<EnumType> enumTypeClass, CodeType code) {
+	public static <EnumType, CodeType> EnumType parseByCode(Class<EnumType > enumTypeClass, CodeType code) {
 		BaseEnum baseEnum = BaseEnumUtil.getInstance(enumTypeClass);
 		return (EnumType) baseEnum.parseByCode(code);
 

@@ -1,9 +1,11 @@
  
 package ${package}.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ${package}.model.${entityName};
 import ${package}.service.${entityName}Service;
+import ${package}.dao.${entityName}Repo;
 import lombok.extern.slf4j.Slf4j;
 /**
  * @title 本代码由Autocoding生成
