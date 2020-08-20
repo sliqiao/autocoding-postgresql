@@ -1,6 +1,9 @@
 package ${package}.model;
 
 import lombok.Data;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -15,7 +18,10 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  * @date    ${date}
  * @description:  
  */
+@Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "${entity.tableName}")
 public class ${entity.entityName}  {
