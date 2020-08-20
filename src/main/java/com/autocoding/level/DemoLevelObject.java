@@ -12,7 +12,7 @@ import java.util.Map;
  * @author: QiaoLi
  * @date: Aug 20, 2020 4:31:59 PM
  */
-class DemoLevelObject extends AbstractLevelObject<DemoLevelObject> {
+class DemoLevelObject extends AbsLevelObject<DemoLevelObject> {
 
 	public DemoLevelObject(Integer id, Integer pid) {
 		super(id, pid);

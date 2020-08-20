@@ -3,28 +3,22 @@ package com.autocoding.level;
 import java.io.Serializable;
 import java.util.Stack;
 
-import net.sf.json.JSONObject;
-
 /**
- * ILevelObject的一个示例
+ * ILevelObject的抽象实现
  * 
  * @ClassName: DemoLevelObject
  * @Description: 用一句话描述该文件做什么
  * @author: QiaoLi
  * @date: Aug 20, 2020 4:31:59 PM
  */
-public class AbstractLevelObject<T> implements ILevelObject<T> {
+public class AbsLevelObject<T> implements ILevelObject<T> {
 
-	private Integer id;
-	private Integer pid;
+	private Serializable id;
+	private Serializable pid;
 	private int level;
 	private Stack<T> stack;
 
-	/**
-	 * @param id
-	 * @param pid
-	 */
-	public AbstractLevelObject(Integer id, Integer pid) {
+	public AbsLevelObject(Serializable id, Serializable pid) {
 		this.id = id;
 		this.pid = pid;
 	}
@@ -70,6 +64,7 @@ public class AbstractLevelObject<T> implements ILevelObject<T> {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -78,7 +73,7 @@ public class AbstractLevelObject<T> implements ILevelObject<T> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractLevelObject other = (AbstractLevelObject) obj;
+		AbsLevelObject<T> other = (AbsLevelObject) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -89,7 +84,8 @@ public class AbstractLevelObject<T> implements ILevelObject<T> {
 
 	@Override
 	public String toString() {
-		return "AbstractLevelObject [id=" + id + ", pid=" + pid + ", level=" + level + ", stack=" +(stack==null?0:stack.size()) + "]";
+		return "AbstractLevelObject [id=" + id + ", pid=" + pid + ", level=" + level + ", stack="
+				+ (stack == null ? 0 : stack.size()) + "]";
 	}
 
 }
