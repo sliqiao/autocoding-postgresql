@@ -73,7 +73,7 @@ public class AbsLevelObject<T> implements ILevelObject<T> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbsLevelObject<T> other = (AbsLevelObject) obj;
+		AbsLevelObject<T> other = (AbsLevelObject<T>) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;

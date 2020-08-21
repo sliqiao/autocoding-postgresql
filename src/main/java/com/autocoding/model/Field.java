@@ -29,6 +29,8 @@ public class Field {
 	private String jdbcType;
 	/** getter字符串 */
 	private String getter;
+	/** get方法签名*/
+	private String getterSingnature;
 	/** 数据库中支持列最大长度 */
 	private int columnLength;
 	/** setter字符串 */
@@ -39,6 +41,7 @@ public class Field {
 	private boolean nullable;
 	/** 该列是否为主键标志 */
 	private final boolean primaryKey;
+	/** 精度 */
 	private int scale;
 
 	public Field(Entity entity, String fieldName, String propertyName, boolean primaryKey, String fieldDes) {
@@ -150,7 +153,12 @@ public class Field {
 
 		return codeBuffer.toString();
 	}
-
+	public String getGetterSingnature() {
+		 StringBuffer getSingnatureSb=new StringBuffer();
+		 getSingnatureSb.append("get").append(this.propertyName.substring(0, 1).toUpperCase()).append(this.propertyName.substring(1));
+		 getSingnatureSb.append("()");
+		 return getSingnatureSb.toString();
+	}
 	public String getGetter() {
 		return this.createGetter();
 	}

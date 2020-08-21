@@ -1,0 +1,62 @@
+package ${package}.${entityName}.service.impl;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import ${package}.model.${entityName};
+import ${package}.service.${entityName}Service;
+import ${package}.dao.${entityName}Repo;
+import com.isatk.yn.util.TwitterSnowflakeIdGenerator;
+import lombok.extern.slf4j.Slf4j;
+import com.isatk.yn.util.HbUtils;
+import com.isatk.yn.util.EmptyUtils;
+/**
+ * @title 本代码由Autocoding生成
+ * @author  ${author}
+ * @date    ${date}
+ * @description:生成动态sql语句  
+ */
+@Slf4j
+@Service
+public class ${entityName}SqlCreator {
+
+ 
+ @Autowired
+ private HbUtils hbUtils;
+ 
+ public boolean update(${pkField.propertyType} ${pkField.propertyName},${entityName} ${entityBeanName}){
+        List<Object> paramsList=new ArrayList<Object>(); 
+		StringBuffer sqlSB=new StringBuffer();
+		sqlSB.append("update ${entity.tableName} set ");
+        <#list fields as field>  
+	        <#if field.propertyName!=pkField.propertyName>
+	         if(EmptyUtils.isNotEmpty(${entityBeanName}.${field.getterSingnature})){
+              sqlSB.append("${field.fieldName}=?");
+			  sqlSB.append(",");
+			  paramsList.add(${entityBeanName}.${field.getterSingnature});
+				}
+			</#if>
+        </#list>   
+		sqlSB.deleteCharAt(sqlSB.lastIndexOf(","));
+		sqlSB.append(" where ${pkField.fieldName} = "+${pkField.propertyName});
+		int effectedRecords = this.hbUtils.executeUpdate(sqlSB.toString(),paramsList);
+		return effectedRecords>=1;
+	}
+	
+ public List<${entityName}> select(${entityName} ${entityBeanName}){
+        List<Object> paramsList = new ArrayList<Object>();
+		StringBuffer sqlSB=new StringBuffer();
+		sqlSB.append("select * from  ${entity.tableName} where 1=1 and ");
+        <#list fields as field>  
+	         if(EmptyUtils.isNotEmpty(${entityBeanName}.${field.getterSingnature})){
+					sqlSB.append("${field.fieldName}=?");
+					sqlSB.append(" and ");
+					paramsList.add(${entityBeanName}.${field.getterSingnature});
+				}
+        </#list>   
+		sqlSB.delete(sqlSB.lastIndexOf("and"),sqlSB.length());
+		String sql=sqlSB.toString().trim();
+		List<${entityName}> resultList =this.hbUtils.querySqlWithParam(sql, ${entityName}.class, paramsList);
+		return resultList;
+	}
+}

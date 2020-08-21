@@ -1,4 +1,3 @@
- 
 package ${package}.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,4 +21,5 @@ public class ${entityName}ServiceImpl implements ${entityName}Service{
  private ${entityName}Repo ${entityBeanName}Repo; 
  @Autowired
  private TwitterSnowflakeIdGenerator twitterSnowflakeIdGenerator;
+ 
 }

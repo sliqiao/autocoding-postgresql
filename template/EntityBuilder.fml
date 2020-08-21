@@ -30,7 +30,7 @@ public class ${entity.entityName}  {
         @Id
         @Column(name = "${pkField.fieldName}")
         private ${pkField.propertyType} ${pkField.propertyName};
-      <#--属性-->
+       <#--属性-->
        <#list fields as field>  
         <#if field.propertyName!=pkField.propertyName>
          /**  ${field.fieldDes}  */
