@@ -71,6 +71,13 @@ public class Entity {
 					+ " LEFT OUTER JOIN pg_description b ON a.attrelid=b.objoid AND a.attnum = b.objsubid,pg_type t "
 					+ "WHERE c.relname = '" + this.tableName
 					+ "' and a.attnum > 0 and a.attrelid = c.oid and a.atttypid = t.oid";
+			tableCommentsSql = " SELECT  relname as TABLE_NAME, obj_description(oid) as COMMENTS FROM pg_class WHERE  relname='"
+					+ this.tableName + "'";
+			// 获取表注释
+			ResultSet tableCommentsResultSet = stmt.executeQuery(tableCommentsSql);
+			while (tableCommentsResultSet.next()) {
+				this.tableComments = tableCommentsResultSet.getString("COMMENTS");
+			}
 		} else if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.MICROSOFT_SQL_SERVER.getCode()) != -1) {
 			return;
 		} else if (databaseTypeCode.toLowerCase().indexOf(DataBaseTypeEnum.ORACLE.getCode()) != -1) {
@@ -92,7 +99,8 @@ public class Entity {
 		Map<String, String> columnComments = new HashMap<String, String>(50);
 		ResultSet columnCommentReslutSet = stmt.executeQuery(columnCommentsSql);
 		while (columnCommentReslutSet.next()) {
-			columnComments.put(columnCommentReslutSet.getString("COLUMN_NAME"), columnCommentReslutSet.getString("COMMENTS"));
+			columnComments.put(columnCommentReslutSet.getString("COLUMN_NAME"),
+					columnCommentReslutSet.getString("COMMENTS"));
 		}
 		columnCommentReslutSet.close();
 		ResultSet columnResultSet = stmt.executeQuery("SELECT * FROM " + this.tableName + " WHERE 1 = 2 ");
