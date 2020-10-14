@@ -23,13 +23,10 @@ public abstract class BaseCodeBuilder {
 	protected Project project;
 	protected Entity entity;
 	protected Map<String, Object> rootMap;
-   /**
-    * 输出到文件
-    * @Title: saveToFile   
-    * @param:       
-    * @return: void      
-    * @throws
-    */
+
+	/**
+	 * 输出到文件 @Title: saveToFile @param: @return: void @throws
+	 */
 	public abstract void saveToFile();
 
 	public BaseCodeBuilder(Project project) {
@@ -41,18 +38,24 @@ public abstract class BaseCodeBuilder {
 	public String getFileoutputPath() {
 		return this.fileoutputPath;
 	}
+
 	public void createEmptyDir() {
-		File tempDir=null;
-		//生成vo、dto、constant、enums
-		List<String> dirList=Arrays.asList("misc","domain","model","vo","dto","constant","enums","aop","config","httpclient","util");
-		for(String dirName:dirList){
-			tempDir=new File(this.project.getRootPackagePath()+File.separator+dirName);
-			if(!tempDir.exists()){
+		if (!this.project.isCreatedEmptyDir()) {
+			return;
+		}
+		File tempDir = null;
+		// 生成vo、dto、constant、enums等空目录
+		List<String> dirList = Arrays.asList("misc", "domain", "model", "vo", "dto", "constant", "enums", "aop",
+				"config", "httpclient", "util");
+		for (String dirName : dirList) {
+			tempDir = new File(this.project.getRootPackagePath() + File.separator + dirName);
+			if (!tempDir.exists()) {
 				tempDir.mkdirs();
 			}
 		}
-		 
+
 	}
+
 	private Map<String, Object> getRootMap() {
 		Map<String, Object> rootMap = new HashMap<String, Object>(10);
 		rootMap.put(FreemarkerTag.Common.AUTHOR, this.project.getAuthor());

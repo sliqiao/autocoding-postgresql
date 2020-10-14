@@ -8,20 +8,19 @@ import com.autocoding.model.CodeBuilderAnnotation;
 import com.autocoding.model.Project;
 
 /**
+ * 生成MybatisPlus Mapper接口
  * 
- * Entity代码生成器
- * 
- * @date 2018年1月6日 下午2:33:59
- * @author 李桥
- * @version 1.0
+ * @ClassName: MybatisPlusMapperBuilder
+ * @author: QiaoLi
+ * @date: Oct 14, 2020 3:01:11 PM
  */
-@CodeBuilderAnnotation(desc = "按照自己的模板生成代码")
-public class YourBuilder extends BaseCodeBuilder {
+@CodeBuilderAnnotation(desc = "生成MybatisPlus Mapper接口")
+public class MybatisPlusMapperBuilder extends BaseCodeBuilder {
 
-	public YourBuilder(Project project) {
+	public MybatisPlusMapperBuilder(Project project) {
 		super(project);
-		super.fileoutputPath = super.project.getEntitiesPath() + super.entity.getEntityName()
-				+ "-your-code-builder.java";
+		super.fileoutputPath = this.project.getMapperPath() + this.entity.getEntityName() + "Mapper.java";
+
 	}
 
 	@Override
@@ -31,4 +30,5 @@ public class YourBuilder extends BaseCodeBuilder {
 				CodeBuilderContainer.getTempleateFileName(this.getClass()), super.fileoutputPath);
 
 	}
+
 }

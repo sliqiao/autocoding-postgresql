@@ -19,49 +19,35 @@ import com.autocoding.util.MyStringUtil.GetSeperatedPathFromPackageParameter;
 public class Project {
 
 	private String projPath;
-
 	private final String rootPackage;
-
 	private final String srcPath;
-
 	private final String rootPackagePath;
-
 	private final String jspRootPath;
-
 	private final String jsRootPath;
-
 	private Entity entity;
-
 	private final String entitiesPath;
 	private final String entitiesPackage;
-
-	/** ibatis配置文件路径 */
 	private final String dbconfigPath;
-
 	private final String actionPath;
 	private final String actionPackage;
-
 	private final String servicePath;
 	private final String servicePackage;
 	private final String daoPath;
 	private final String daoPackage;
+	private final String mapperPath;
+	private final String mapperPackage;
 	private final String serviceImplPath;
 	private final String serviceImplPackage;
 	private final String controllerPath;
 	private final String controllerPackage;
 	private String outputPath;
-
 	private String templatePath;
-
 	private String prefix;
 	private String userTableSpace;
-
 	private final String dateString;
-
 	private String author;
-
 	private String prefixWithSharp;
-
+	private boolean createdEmptyDir=false;
 	public Project(String projPath, String rootPackage, String userTableSpace, String outputDir) {
 		this.projPath = projPath;
 		this.rootPackage = rootPackage;
@@ -95,14 +81,17 @@ public class Project {
 		this.daoPath = this.rootPackagePath + "dao" + File.separator;
 		this.daoPackage = this.rootPackage + ".dao";
 		
+		this.mapperPath = this.rootPackagePath + "mapper" + File.separator;
+		this.mapperPackage = this.rootPackage + ".mapper";
+
 		this.servicePath = this.rootPackagePath + "service" + File.separator;
 		this.servicePackage = this.rootPackage + ".service";
 
 		this.serviceImplPath = this.servicePath + "impl" + File.separator;
 		this.serviceImplPackage = this.servicePackage + ".impl";
-		
-		this.controllerPath = this.rootPackagePath+ "controller" + File.separator;
-		this.controllerPackage = this.rootPackage  + ".controller";
+
+		this.controllerPath = this.rootPackagePath + "controller" + File.separator;
+		this.controllerPackage = this.rootPackage + ".controller";
 
 		this.templatePath = this.projPath + "template" + File.separator;
 
@@ -227,19 +216,15 @@ public class Project {
 		this.prefixWithSharp = prefixWithSharp;
 	}
 
-	/**
-	 * @return 获取 dbconfigPath属性值
-	 */
+	 
 	public String getDbconfigPath() {
 		return this.dbconfigPath;
 	}
 
-	/** getter: userTableSpace */
 	public String getUserTableSpace() {
 		return this.userTableSpace;
 	}
 
-	/** setter: userTableSpace */
 	public void setUserTableSpace(String userTableSpace) {
 		this.userTableSpace = userTableSpace;
 	}
@@ -255,10 +240,22 @@ public class Project {
 	public String getDaoPath() {
 		return daoPath;
 	}
-
+	public String getMapperPath() {
+		return mapperPath;
+	}
 	public String getDaoPackage() {
 		return daoPackage;
 	}
-	
+	public String getMapperPackage() {
+		return mapperPackage;
+	}
 
+	public boolean isCreatedEmptyDir() {
+		return createdEmptyDir;
+	}
+
+	public void setCreatedEmptyDir(boolean createdEmptyDir) {
+		this.createdEmptyDir = createdEmptyDir;
+	}
+	
 }

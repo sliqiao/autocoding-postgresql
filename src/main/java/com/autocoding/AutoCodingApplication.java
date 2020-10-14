@@ -56,6 +56,7 @@ public class AutoCodingApplication {
 			String prefix = this.props.getProperty(ConfigConstant.AUTOCODING_PREFIX);
 			this.project = new Project(rootdir, this.rootPackage, this.userName);
 			this.project.setPrefix(prefix);
+			this.project.setCreatedEmptyDir(Boolean.valueOf(this.props.getProperty(ConfigConstant.AUTOCODING_PREFIX)));
 			this.project.setAuthor(this.props.getProperty(ConfigConstant.AUTOCODING_AUTHOR));
 			String prefixWithSharp = prefix.replace(".", "/");
 			this.project.setPrefixWithSharp(prefixWithSharp);

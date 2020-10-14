@@ -1,7 +1,6 @@
 package ${package}.model;
 
 import lombok.Data;
-import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import javax.persistence.Column;
@@ -16,9 +15,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
  * @title 本代码由Autocoding生成
  * @author  ${author}
  * @date    ${date}
- * @description:  
  */
-@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

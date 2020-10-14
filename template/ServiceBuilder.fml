@@ -1,13 +1,12 @@
- 
 package ${package}.service;
 import ${package}.model.${entityName};
-
+import com.baomidou.mybatisplus.extension.service.IService;
 /**
+ * ${entityName}Service
  * @title 本代码由Autocoding生成
  * @author  ${author}
  * @date    ${date}
- * @description:  
  */
-public interface ${entityName}Service {
+public interface ${entityName}Service extends IService<NotifyJpushMsg>  {
   
 }

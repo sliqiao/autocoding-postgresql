@@ -17,4 +17,5 @@ public interface ConfigConstant {
 	public static String AUTOCODING_TABLE_NAMES = "autocoding.table.names";
 	public static String AUTOCODING_PREFIX = "autocoding.prefix";
 	public static String AUTOCODING_AUTHOR = "autocoding.author";
+	public static String AUTOCODING_CREATED_EMPTY_DIR = "autocoding.createdEmptyDir";
 }

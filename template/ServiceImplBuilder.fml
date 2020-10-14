@@ -4,22 +4,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ${package}.model.${entityName};
 import ${package}.service.${entityName}Service;
-import ${package}.dao.${entityName}Repo;
+import ${project.mapperPackage}.${entityName}Mapper;
 import com.isatk.yn.util.TwitterSnowflakeIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 /**
+ * 
  * @title 本代码由Autocoding生成
  * @author  ${author}
  * @date    ${date}
- * @description:  
  */
 @Slf4j
 @Service
-public class ${entityName}ServiceImpl implements ${entityName}Service{
+public class ${entityName}ServiceImpl extends ServiceImpl<${entityName}Mapper,${entityName}> implements ${entityName}Service{
 
- @Autowired
- private ${entityName}Repo ${entityBeanName}Repo; 
- @Autowired
- private TwitterSnowflakeIdGenerator twitterSnowflakeIdGenerator;
+@Autowired
+private NotifyJpushMsgMapper notifyJpushMsgMapper;
+@Autowired
+private TwitterSnowflakeIdGenerator twitterSnowflakeIdGenerator;
  
 }

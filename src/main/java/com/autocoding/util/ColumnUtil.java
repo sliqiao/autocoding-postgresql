@@ -81,7 +81,7 @@ public class ColumnUtil {
 				|| iDataType == Types.CLOB) {
 			javaType = "String";
 		} else if (iDataType == Types.INTEGER || iDataType == Types.BIT || iDataType == Types.TINYINT
-				|| iDataType == Types.NUMERIC) {
+				|| iDataType == Types.SMALLINT || iDataType == Types.NUMERIC) {
 			javaType = "Integer";
 			if (scale > 0) {
 				javaType = "Double";
