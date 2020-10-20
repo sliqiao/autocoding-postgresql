@@ -27,8 +27,10 @@ public class CodeBuilderScanUtil {
 		if (tempSet == null || tempSet.size() == 0) {
 			return null;
 		}
+
 		for (Class<?> c : tempSet) {
-			if (c.getAnnotation(CodeBuilderAnnotation.class) != null) {
+			CodeBuilderAnnotation tempCodeBuilderAnnotation = c.getAnnotation(CodeBuilderAnnotation.class);
+			if (tempCodeBuilderAnnotation != null && tempCodeBuilderAnnotation.enabled()) {
 				resultSet.add(c);
 			}
 		}

@@ -7,6 +7,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author  ${author}
  * @date    ${date}
  */
-public interface ${entityName}Service extends IService<NotifyJpushMsg>  {
+public interface ${entityName}Service extends IService<${entityName}>  {
   
 }

@@ -15,5 +15,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CodeBuilderAnnotation {
+	/** 描述*/
 	public String desc() default "";
+	/** 是否启用*/
+	public boolean enabled() default true;
 }
