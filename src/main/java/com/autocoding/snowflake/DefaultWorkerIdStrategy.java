@@ -12,7 +12,7 @@ public final class DefaultWorkerIdStrategy implements WorkerIdStrategy {
 	private DefaultWorkerIdStrategy() {
 	}
 
-	public static DefaultWorkerIdStrategy getInstance(Long dataCenterId, Long machineId) {
+	public static WorkerIdStrategy getInstance(Long dataCenterId, Long machineId) {
 		if (null == dataCenterId) {
 			throw new IllegalArgumentException("dataCenterId不能为Null");
 		}
@@ -25,8 +25,8 @@ public final class DefaultWorkerIdStrategy implements WorkerIdStrategy {
 		return defaultWorkerIdStrategy;
 	}
 
-	public static DefaultWorkerIdStrategy getInstance() {
-		return INSTANCE;
+	public static WorkerIdStrategy getInstance() {
+		return getInstance(0L, 0L);
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package com.autocoding.snowflake;
 
-import static com.autocoding.snowflake.SnowFlake.MAX_DATACENTER_NUM;
-import static com.autocoding.snowflake.SnowFlake.MAX_MACHINE_NUM;
+import static com.autocoding.snowflake.SnowFlakeUtil.MAX_DATACENTER_NUM;
+import static com.autocoding.snowflake.SnowFlakeUtil.MAX_MACHINE_NUM;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,7 +24,7 @@ public final class CustomWorkerIdStrategy implements WorkerIdStrategy {
 	 * @param machineIdString
 	 * @return CustomWorkerIdStrategy
 	 */
-	public static CustomWorkerIdStrategy getInstance(String dataCenterIdString, String machineIdString) {
+	public static WorkerIdStrategy getInstance(String dataCenterIdString, String machineIdString) {
 		if (StringUtils.isEmpty(dataCenterIdString)) {
 			throw new IllegalArgumentException("datacenterIdString不能为Null");
 		}
