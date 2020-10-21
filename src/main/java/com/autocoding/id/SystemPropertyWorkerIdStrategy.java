@@ -14,7 +14,7 @@ public class SystemPropertyWorkerIdStrategy implements WorkerIdStrategy {
 	}
 
 	@Override
-	public long getDatacenterId() {
+	public long getDataCenterId() {
 		String datacenterId = System.getProperty(KEY_DATA_CENTER_ID, "0");
 		return Long.valueOf(datacenterId);
 	}

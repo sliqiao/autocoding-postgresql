@@ -14,7 +14,7 @@ public interface WorkerIdStrategy {
 	 * 
 	 * @return long
 	 */
-	public long getDatacenterId();
+	public long getDataCenterId();
 
 	/**
 	 * 

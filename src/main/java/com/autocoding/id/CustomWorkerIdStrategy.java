@@ -35,7 +35,7 @@ public final class CustomWorkerIdStrategy implements WorkerIdStrategy {
 	}
 
 	@Override
-	public long getDatacenterId() {
+	public long getDataCenterId() {
 		char[] charArray = dataCenterIdString.toCharArray();
 		long sum = 0L;
 		for (char c : charArray) {

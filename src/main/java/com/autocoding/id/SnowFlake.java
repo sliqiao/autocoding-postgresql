@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
- * id格式：时间戳()+数据中心(5位)+机器(5位)+序列号(12位)
+ * id格式：固定0(1位)+时间戳(41)+数据中心(5位)+机器(5位)+序列号(12位)
  * 
  * @ClassName: SnowFlake
  * @Description: 用一句话描述该文件做什么
@@ -69,7 +69,7 @@ public class SnowFlake {
 
 	public static SnowFlake getInstance(WorkerIdStrategy workerIdStrategy) {
 
-		long datacenterId = workerIdStrategy.getDatacenterId();
+		long datacenterId = workerIdStrategy.getDataCenterId();
 		long machineId = workerIdStrategy.getMachineId();
 		if (datacenterId > MAX_DATACENTER_NUM || datacenterId < 0) {
 			throw new IllegalArgumentException("datacenterId can't be greater than MAX_DATACENTER_NUM or less than 0");
@@ -82,7 +82,7 @@ public class SnowFlake {
 
 	public static SnowFlake getInstance() {
 		WorkerIdStrategy workerIdStrategy = DefaultWorkerIdStrategy.getInstance();
-		long datacenterId = workerIdStrategy.getDatacenterId();
+		long datacenterId = workerIdStrategy.getDataCenterId();
 		long machineId = workerIdStrategy.getMachineId();
 		if (datacenterId > MAX_DATACENTER_NUM || datacenterId < 0) {
 			throw new IllegalArgumentException("datacenterId can't be greater than MAX_DATACENTER_NUM or less than 0");
