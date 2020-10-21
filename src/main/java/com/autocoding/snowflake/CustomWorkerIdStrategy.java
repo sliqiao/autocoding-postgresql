@@ -1,7 +1,7 @@
-package com.autocoding.id;
+package com.autocoding.snowflake;
 
-import static com.autocoding.id.SnowFlake.MAX_DATACENTER_NUM;
-import static com.autocoding.id.SnowFlake.MAX_MACHINE_NUM;
+import static com.autocoding.snowflake.SnowFlake.MAX_DATACENTER_NUM;
+import static com.autocoding.snowflake.SnowFlake.MAX_MACHINE_NUM;
 
 import org.apache.commons.lang3.StringUtils;
 

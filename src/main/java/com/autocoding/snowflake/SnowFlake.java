@@ -1,4 +1,4 @@
-package com.autocoding.id;
+package com.autocoding.snowflake;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -1,4 +1,4 @@
-package com.autocoding.id;
+package com.autocoding.snowflake;
 
 public class SystemPropertyWorkerIdStrategy implements WorkerIdStrategy {
 
