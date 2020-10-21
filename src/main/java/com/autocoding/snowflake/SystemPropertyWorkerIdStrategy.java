@@ -9,7 +9,7 @@ public class SystemPropertyWorkerIdStrategy implements WorkerIdStrategy {
 	private SystemPropertyWorkerIdStrategy() {
 	}
 
-	public static SystemPropertyWorkerIdStrategy getInstance() {
+	public static WorkerIdStrategy getInstance() {
 		return instance;
 	}
 

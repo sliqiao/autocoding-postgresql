@@ -24,7 +24,7 @@ public final class CustomWorkerIdStrategy implements WorkerIdStrategy {
 	 * @param machineIdString
 	 * @return CustomWorkerIdStrategy
 	 */
-	public static CustomWorkerIdStrategy getInstance(String dataCenterIdString, String machineIdString) {
+	public static WorkerIdStrategy getInstance(String dataCenterIdString, String machineIdString) {
 		if (StringUtils.isEmpty(dataCenterIdString)) {
 			throw new IllegalArgumentException("datacenterIdString不能为Null");
 		}

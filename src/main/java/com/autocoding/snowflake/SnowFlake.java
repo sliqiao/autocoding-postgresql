@@ -82,23 +82,9 @@ public class SnowFlake {
 
 	public static SnowFlake getInstance() {
 		WorkerIdStrategy workerIdStrategy = DefaultWorkerIdStrategy.getInstance();
-		long datacenterId = workerIdStrategy.getDataCenterId();
-		long machineId = workerIdStrategy.getMachineId();
-		if (datacenterId > MAX_DATACENTER_NUM || datacenterId < 0) {
-			throw new IllegalArgumentException("datacenterId can't be greater than MAX_DATACENTER_NUM or less than 0");
-		}
-		if (machineId > MAX_MACHINE_NUM || machineId < 0) {
-			throw new IllegalArgumentException("machineId can't be greater than MAX_MACHINE_NUM or less than 0");
-		}
-		return new SnowFlake(datacenterId, machineId);
+		return SnowFlake.getInstance(workerIdStrategy);
 	}
 
-	/**
-	 * 
-	 * 获取Id
-	 * 
-	 * @return long
-	 */
 	public synchronized long nextId() {
 		long currentTimeStamp = getCurrentTimeStamp();
 		if (currentTimeStamp < lastTimeStamp) {
@@ -144,7 +130,6 @@ public class SnowFlake {
 		for (int i = 0; i < 1000000; i++) {
 			System.out.println("id:" + snowFlake.nextId());
 		}
-
 		System.out.println("耗时(ms):" + (System.currentTimeMillis() - start));
 
 	}
