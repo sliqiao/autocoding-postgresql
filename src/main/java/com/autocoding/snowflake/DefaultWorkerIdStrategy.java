@@ -4,7 +4,6 @@ import java.util.Random;
 
 public final class DefaultWorkerIdStrategy implements WorkerIdStrategy {
 
-	private static DefaultWorkerIdStrategy INSTANCE = new DefaultWorkerIdStrategy();
 
 	private Long dataCenterId = null;
 	private Long machineId = null;

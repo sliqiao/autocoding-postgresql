@@ -1,9 +1,7 @@
 package com.autocoding.snowflake;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Data
 public class SnowFlakeId {
 	private long originalDataCenterId;
@@ -50,7 +48,6 @@ public class SnowFlakeId {
 		private long originalMachineId;
 		private long originalTimeStamp;
 		private long originalSequence;
-		private long sequence;
 
 		private Builder() {
 		}
@@ -60,10 +57,6 @@ public class SnowFlakeId {
 			return builder;
 		}
 
-		public Builder sequence(long sequence) {
-			this.sequence = sequence;
-			return this;
-		}
 
 		public Builder originalDataCenterId(long originalDataCenterId) {
 			this.originalDataCenterId = originalDataCenterId;
