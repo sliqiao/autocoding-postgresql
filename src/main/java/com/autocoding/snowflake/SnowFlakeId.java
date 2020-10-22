@@ -1,5 +1,7 @@
 package com.autocoding.snowflake;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import lombok.Data;
 
 @Data
@@ -25,11 +27,11 @@ public class SnowFlakeId {
 
 	public String idString() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append((originalTimeStamp - SnowFlakeUtil.START_TIMESTAMP) << SnowFlakeUtil.TIMESTMP_SHIFT)
+		stringBuilder.append(DateFormatUtils.format(this.getOriginalTimeStamp(), "yyyy-MM-dd_HH:mm:ss:SSS"))
 				.append(DAFAULT_SEPARATOR);
-		stringBuilder.append(this.originalDataCenterId << SnowFlakeUtil.DATA_CENTER_SHIFT).append(DAFAULT_SEPARATOR);
-		stringBuilder.append(this.originalMachineId << SnowFlakeUtil.MACHINE_SHIFT).append(DAFAULT_SEPARATOR);
-		stringBuilder.append(originalSequence).append(DAFAULT_SEPARATOR);
+		stringBuilder.append(this.originalDataCenterId).append(DAFAULT_SEPARATOR);
+		stringBuilder.append(this.originalMachineId).append(DAFAULT_SEPARATOR);
+		stringBuilder.append(originalSequence);
 		return stringBuilder.toString();
 	}
 

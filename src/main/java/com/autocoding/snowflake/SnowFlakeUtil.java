@@ -125,22 +125,4 @@ public class SnowFlakeUtil {
 		return System.currentTimeMillis();
 	}
 
-	public static void main(String[] args) {
-		SnowFlakeUtil snowFlake = SnowFlakeUtil.getInstance(DefaultWorkerIdStrategy.getInstance(31L, 31L));
-		long start = System.currentTimeMillis();
-		for (int i = 0; i < 10; i++) {
-			SnowFlakeId snowFlakeId = snowFlake.next();
-			System.out.println("原始：id:" + snowFlakeId.idString() + "|timeStamp:"
-					+ DateFormatUtils.format(snowFlakeId.getOriginalTimeStamp(), "yyyy-MM-dd HH:mm:ss SSS")
-					+ "|dataCenterId:" + snowFlakeId.getOriginalDataCenterId() + "|machineId:"
-					+ snowFlakeId.getOriginalMachineId() + "|sequence:" + snowFlakeId.getOriginalSequence());
-			SnowFlakeId parseSnowFlakeId = SnowFlakeId.parse(snowFlakeId.id());
-			System.out.println("解析：id:" + parseSnowFlakeId.idString() + "|timeStamp:"
-					+ DateFormatUtils.format(parseSnowFlakeId.getOriginalTimeStamp(), "yyyy-MM-dd HH:mm:ss SSS")
-					+ "|dataCenterId:" + parseSnowFlakeId.getOriginalDataCenterId() + "|machineId:"
-					+ parseSnowFlakeId.getOriginalMachineId() + "|sequence:" + parseSnowFlakeId.getOriginalSequence());
-		}
-		System.out.println("耗时(ms):" + (System.currentTimeMillis() - start));
-
-	}
 }
