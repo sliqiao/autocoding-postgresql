@@ -130,12 +130,12 @@ public class SnowFlakeUtil {
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < 10; i++) {
 			SnowFlakeId snowFlakeId = snowFlake.next();
-			System.out.println("原始：id:" + snowFlakeId.id() + "|timeStamp:"
+			System.out.println("原始：id:" + snowFlakeId.idString() + "|timeStamp:"
 					+ DateFormatUtils.format(snowFlakeId.getOriginalTimeStamp(), "yyyy-MM-dd HH:mm:ss SSS")
 					+ "|dataCenterId:" + snowFlakeId.getOriginalDataCenterId() + "|machineId:"
 					+ snowFlakeId.getOriginalMachineId() + "|sequence:" + snowFlakeId.getOriginalSequence());
 			SnowFlakeId parseSnowFlakeId = SnowFlakeId.parse(snowFlakeId.id());
-			System.out.println("解析：id:" + parseSnowFlakeId.id() + "|timeStamp:"
+			System.out.println("解析：id:" + parseSnowFlakeId.idString() + "|timeStamp:"
 					+ DateFormatUtils.format(parseSnowFlakeId.getOriginalTimeStamp(), "yyyy-MM-dd HH:mm:ss SSS")
 					+ "|dataCenterId:" + parseSnowFlakeId.getOriginalDataCenterId() + "|machineId:"
 					+ parseSnowFlakeId.getOriginalMachineId() + "|sequence:" + parseSnowFlakeId.getOriginalSequence());

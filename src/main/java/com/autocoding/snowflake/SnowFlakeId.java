@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class SnowFlakeId {
+	private static final String DAFAULT_SEPARATOR = "-";
 	private long originalDataCenterId;
 	private long originalMachineId;
 	private long originalTimeStamp;
@@ -20,6 +21,16 @@ public class SnowFlakeId {
 		return (originalTimeStamp - SnowFlakeUtil.START_TIMESTAMP) << SnowFlakeUtil.TIMESTMP_SHIFT
 				| this.originalDataCenterId << SnowFlakeUtil.DATA_CENTER_SHIFT
 				| this.originalMachineId << SnowFlakeUtil.MACHINE_SHIFT | originalSequence;
+	}
+
+	public String idString() {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append((originalTimeStamp - SnowFlakeUtil.START_TIMESTAMP) << SnowFlakeUtil.TIMESTMP_SHIFT)
+				.append(DAFAULT_SEPARATOR);
+		stringBuilder.append(this.originalDataCenterId << SnowFlakeUtil.DATA_CENTER_SHIFT).append(DAFAULT_SEPARATOR);
+		stringBuilder.append(this.originalMachineId << SnowFlakeUtil.MACHINE_SHIFT).append(DAFAULT_SEPARATOR);
+		stringBuilder.append(originalSequence).append(DAFAULT_SEPARATOR);
+		return stringBuilder.toString();
 	}
 
 	public static SnowFlakeId parse(long id) {
@@ -56,7 +67,6 @@ public class SnowFlakeId {
 			Builder builder = new Builder();
 			return builder;
 		}
-
 
 		public Builder originalDataCenterId(long originalDataCenterId) {
 			this.originalDataCenterId = originalDataCenterId;
