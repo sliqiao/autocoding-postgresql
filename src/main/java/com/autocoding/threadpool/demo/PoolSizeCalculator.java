@@ -1,4 +1,4 @@
-package com.autocoding.threadpool;
+package com.autocoding.threadpool.demo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

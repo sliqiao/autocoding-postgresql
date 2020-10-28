@@ -12,4 +12,4 @@
  * @version V1.0
  */
 
-package com.autocoding.threadpool;
+package com.autocoding.threadpool.demo;
