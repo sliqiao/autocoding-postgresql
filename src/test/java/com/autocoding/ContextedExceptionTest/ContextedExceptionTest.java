@@ -1,4 +1,4 @@
-package com.autododing.ContextedExceptionTest;
+package com.autocoding.ContextedExceptionTest;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
