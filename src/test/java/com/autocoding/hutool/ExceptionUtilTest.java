@@ -5,10 +5,10 @@ import org.junit.Test;
 import cn.hutool.core.exceptions.ExceptionUtil;
 
 public class ExceptionUtilTest {
+	// 输出虚拟机栈VM Stack所有的StackFrame信息
 	@Test
 	public void getStackElements() {
 		StackTraceElement[] stackTraceElementArray = ExceptionUtil.getStackElements();
-		// 输出虚拟机栈VM Stack所有的StackFrame信息
 		System.out.println("测试:" + stackTraceElementArray);
 
 	}
