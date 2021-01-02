@@ -22,27 +22,25 @@ import cn.hutool.dfa.WordTree;
 public class DFA关键字过滤Test {
 	private static WordTree tree = new WordTree();
 	static {
-		tree.addWord("大");
-		tree.addWord("大土豆");
-		tree.addWord("土豆");
-		tree.addWord("刚出锅");
-		tree.addWord("出锅");
+		DFA关键字过滤Test.tree.addWord("大");
+		DFA关键字过滤Test.tree.addWord("大土豆");
+		DFA关键字过滤Test.tree.addWord("土豆");
+		DFA关键字过滤Test.tree.addWord("刚出锅");
+		DFA关键字过滤Test.tree.addWord("出锅");
 	}
 
 	public static void main(String[] args) throws Exception {
-		String name = DFA关键字过滤Test.class.getName();
-		Options options = new OptionsBuilder().include(name).forks(1).measurementIterations(10).warmupIterations(3)
-				.build();
+		final String name = DFA关键字过滤Test.class.getName();
+		final Options options = new OptionsBuilder().include(name).forks(1)
+				.measurementIterations(10).warmupIterations(3).build();
 		new Runner(options).run();
 	}
-
- 
 
 	@Benchmark
 	@Test
 	public void DFA测试() {
-		String text = "我有一颗大土豆，刚出锅的";
-		List<String> matchAll = tree.matchAll(text, -1, false, false);
+		final String text = "我有一颗大土豆，刚出锅的";
+		final List<String> matchAll = DFA关键字过滤Test.tree.matchAll(text, -1, false, false);
 		System.err.println(matchAll);
 
 	}
