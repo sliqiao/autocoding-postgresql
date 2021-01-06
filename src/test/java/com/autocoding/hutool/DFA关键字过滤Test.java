@@ -37,9 +37,9 @@ public class DFA关键字过滤Test {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String name = DFA关键字过滤Test.class.getName();
-		Options options = new OptionsBuilder().include(name).forks(1).measurementIterations(3).warmupIterations(1)
-				.build();
+		final String name = DFA关键字过滤Test.class.getName();
+		final Options options = new OptionsBuilder().include(name).forks(1).measurementIterations(10)
+				.warmupIterations(3).build();
 		new Runner(options).run();
 	}
 
