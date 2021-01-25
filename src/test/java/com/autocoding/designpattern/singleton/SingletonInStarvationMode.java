@@ -12,7 +12,12 @@ public class SingletonInStarvationMode {
 	private SingletonInStarvationMode() {
 	}
 
-	public SingletonInStarvationMode getInstance() {
+	public static SingletonInStarvationMode getInstance() {
+		return instance;
+	}
+
+	// 在反序列化场景一，也保证单例模式
+	private Object readResolve() {
 		return instance;
 	}
 }

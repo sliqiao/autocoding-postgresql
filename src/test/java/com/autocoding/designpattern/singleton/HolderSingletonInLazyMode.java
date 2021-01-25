@@ -11,11 +11,14 @@ public class HolderSingletonInLazyMode {
 	private HolderSingletonInLazyMode() {
 	}
 
-	public HolderSingletonInLazyMode getInstance() {
+	public static HolderSingletonInLazyMode getInstance() {
 
 		return Holder.instance;
 	}
-
+	 //在反序列化场景一，也保证单例模式
+    private Object readResolve(){
+        return HolderSingletonInLazyMode.getInstance();
+    }
 	private static interface Holder
 
 	{

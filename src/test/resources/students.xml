@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<students>
+	<student stuNo="1">
+		<name>张三</name>
+		<nickname>张三</nickname>
+		<score>85</score>
+	</student>
+	<student stuNo="2">
+		<name>李四</name>
+		<nickname>李四</nickname>
+		<score>85</score>
+	</student>
+	<student stuNo="3">
+		<name>王五</name>
+		<nickname>王五</nickname>
+		<score>85</score>
+	</student>
+</students>

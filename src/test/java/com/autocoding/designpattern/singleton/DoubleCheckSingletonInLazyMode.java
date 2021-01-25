@@ -14,7 +14,12 @@ public class DoubleCheckSingletonInLazyMode {
 	private DoubleCheckSingletonInLazyMode() {
 	}
 
-	public DoubleCheckSingletonInLazyMode getInstance() {
+	// 在反序列化场景一，也保证单例模式
+	private Object readResolve() {
+		return instance;
+	}
+
+	public static DoubleCheckSingletonInLazyMode getInstance() {
 		if (null == instance) {
 			// null的Double Check保证多线程安全，可能会有多个线程调用getInstance()方法
 			synchronized (instance) {

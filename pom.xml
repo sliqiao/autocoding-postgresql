@@ -131,7 +131,22 @@
 			<artifactId>jmh-generator-annprocess</artifactId>
 			<version>1.20</version>
 		</dependency>
+		<dependency>
+			<groupId>com.dyuproject.protostuff</groupId>
+			<artifactId>protostuff-core</artifactId>
+			<version>1.0.8</version>
+		</dependency>
 
+		<dependency>
+			<groupId>com.dyuproject.protostuff</groupId>
+			<artifactId>protostuff-runtime</artifactId>
+			<version>1.0.8</version>
+		</dependency>
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<resources>
@@ -252,29 +267,12 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>run-benchmarks</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<classpathScope>test</classpathScope>
-							<executable>java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath />
-								<argument>org.openjdk.jmh.Main</argument>
-								<argument>.*</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin> -->
+			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>exec-maven-plugin</artifactId> 
+				<executions> <execution> <id>run-benchmarks</id> <phase>integration-test</phase> 
+				<goals> <goal>exec</goal> </goals> <configuration> <classpathScope>test</classpathScope> 
+				<executable>java</executable> <arguments> <argument>-classpath</argument> 
+				<classpath /> <argument>org.openjdk.jmh.Main</argument> <argument>.*</argument> 
+				</arguments> </configuration> </execution> </executions> </plugin> -->
 		</plugins>
 	</build>
 </project>
