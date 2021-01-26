@@ -1,13 +1,12 @@
 package com.autocoding.serializable;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import com.dyuproject.protostuff.LinkedBuffer;
 import com.dyuproject.protostuff.ProtobufIOUtil;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
 
-public class ProtocolBufferSerializer {
+public class ProtoStuffSerializer {
 
 	public static <T> byte[] serialize(T t, Class<T> clazz) {
 		return ProtobufIOUtil.toByteArray(t, RuntimeSchema.createFrom(clazz),
@@ -27,10 +26,10 @@ public class ProtocolBufferSerializer {
 		student.setName("李桥");
 		try {
 			// 序列化
-			byte[] bytes = ProtocolBufferSerializer.serialize(student, Student.class);
+			byte[] bytes = ProtoStuffSerializer.serialize(student, Student.class);
 			System.out.println("序列化之后：" + Arrays.toString(bytes));
 			// 反序列化
-			Student serializeStudent = ProtocolBufferSerializer.deserialize(bytes, Student.class);
+			Student serializeStudent = ProtoStuffSerializer.deserialize(bytes, Student.class);
 			System.out.println(serializeStudent.getName());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -38,9 +37,7 @@ public class ProtocolBufferSerializer {
 
 	}
 
-	private static class Student implements Serializable {
-
-		private static final long serialVersionUID = 8888L;
+	private static class Student {
 
 		private String id;
 
