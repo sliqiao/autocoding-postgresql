@@ -1,6 +1,6 @@
 package com.autocoding.threadpool;
 
-import java.lang.reflect.Field;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -8,14 +8,15 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import cn.hutool.core.bean.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -79,17 +80,17 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	}
 
 	@Override
-	public <T> Future<T> submit(Callable<T> task) {
-		if (task instanceof RunnableWrapper) {
-			final RunnableWrapper runnableWrapper = (RunnableWrapper) task;
+	protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
+		if (callable instanceof RunnableWrapper) {
+			final RunnableWrapper runnableWrapper = (RunnableWrapper) callable;
 			final TaskStatInfo runnableStatInfo = new TaskStatInfo();
 			runnableStatInfo.setId(runnableWrapper.getId());
 			runnableStatInfo.setOriHashCode(runnableWrapper.getRunnable().hashCode());
 			runnableStatInfo.setDesc(runnableWrapper.getDesc());
 			runnableStatInfo.setSubmittedTime(new Date());
 			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
-		} else if (task instanceof CallableWrapper) {
-			final CallableWrapper<T> callableWrapper = (CallableWrapper<T>) task;
+		} else if (callable instanceof CallableWrapper) {
+			final CallableWrapper<T> callableWrapper = (CallableWrapper<T>) callable;
 			final TaskStatInfo runnableStatInfo = new TaskStatInfo();
 			runnableStatInfo.setId(callableWrapper.getId());
 			runnableStatInfo.setOriHashCode(callableWrapper.getCallable().hashCode());
@@ -97,10 +98,9 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			runnableStatInfo.setSubmittedTime(new Date());
 			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
 		} else {
-			MonitoredThreadPoolExecutor.log.error("非法类型,task:{}", task.getClass().getName());
+			MonitoredThreadPoolExecutor.log.error("非法类型,task:{}", callable.getClass().getName());
 		}
-
-		return super.submit(task);
+		return super.newTaskFor(callable);
 	}
 
 	@Override
@@ -108,8 +108,19 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 		final String runnableId = this.getRunnableId(r);
 		this.idMap.put(r.hashCode(), runnableId);
-		final TaskStatInfo runnableStatInfo = this.runnableStatInfoMap.get(runnableId);
-		runnableStatInfo.setStartTime(new Date());
+		TaskStatInfo runnableStatInfo = this.runnableStatInfoMap.get(runnableId);
+		if (null != runnableStatInfo) {
+			runnableStatInfo.setStartTime(new Date());
+		} else {
+			// ExecutorService.execute(Runnable)提交的任务，不经过newTaskFor（）方法，所以需要在这里初始化TaskStatInfo对象
+			runnableStatInfo = new TaskStatInfo();
+			runnableStatInfo.setId(runnableId);
+			runnableStatInfo.setOriHashCode(r.hashCode());
+			runnableStatInfo.setSubmittedTime(new Date());
+			runnableStatInfo.setStartTime(new Date());
+			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
+		}
+
 		MonitoredThreadPoolExecutor.log.info("RunnableId:{},开始执行！ ", runnableId);
 	}
 
@@ -124,8 +135,10 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			if (null != runnableStatInfo) {
 				final Date startTime = runnableStatInfo.getStartTime();
 				final Date endTime = new Date();
-				waitingTimeInMs = Long.valueOf(
-						startTime.getTime() - runnableStatInfo.getSubmittedTime().getTime());
+				if (null != runnableStatInfo.getSubmittedTime()) {
+					waitingTimeInMs = Long.valueOf(
+							startTime.getTime() - runnableStatInfo.getSubmittedTime().getTime());
+				}
 				elapsedTimeInMs = Long.valueOf(endTime.getTime() - startTime.getTime());
 				totalTimeInMs = Long
 						.valueOf(endTime.getTime() - runnableStatInfo.getSubmittedTime().getTime());
@@ -144,7 +157,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 							this.getKeepAliveTime(TimeUnit.SECONDS), t.getMessage());
 		} else {
 			if (totalTimeInMs > MonitoredThreadPoolExecutor.EXECUTION_TIME_OUT_IN_MS) {
-				MonitoredThreadPoolExecutor.log.error(
+				MonitoredThreadPoolExecutor.log.warn(
 						"RunnableId:{},结束执行【执行超时】, "
 								+ "等待时间:{}, 执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 								+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s",
@@ -156,9 +169,10 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			} else {
 				MonitoredThreadPoolExecutor.log.info(
 						"RunnableId:{},结束执行, "
-								+ "执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
+								+ "等待时间:{}, 执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 								+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s",
-								runnableId, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
+						runnableId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
+						this.getPoolSize(),
 								this.getCorePoolSize(), this.getMaximumPoolSize(),
 								this.getLargestPoolSize(), this.getCompletedTaskCount(),
 								this.getQueue().size(), this.getTaskCount(),
@@ -195,29 +209,37 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 	/**
 	 * 获取任务Id
-	 * 
+	 * java.util.concurrent.ExecutorCompletionService$QueueingFuture 应用程序不可见
+	 * java.util.concurrent.Executors$RunnableAdapter 应用程序不可见
 	 * @param r
 	 * @return
 	 */
 	private String getRunnableId(Runnable r) {
 		String runnableId = String.valueOf(r.hashCode());
-		final FutureTask<?> futureTask = (FutureTask<?>) r;
-		try {
-			final Field field = futureTask.getClass().getDeclaredField("callable");
-			field.setAccessible(true);
-			final Object callableObject = field.get(futureTask);
-			if (callableObject instanceof RunnableWrapper) {
-				final RunnableWrapper runnableWrapper = (RunnableWrapper) callableObject;
-				runnableId = runnableWrapper.getId();
-			} else if (callableObject instanceof CallableWrapper) {
-				final CallableWrapper<?> callableWrapper = (CallableWrapper<?>) callableObject;
-				runnableId = callableWrapper.getId();
+		if (r instanceof FutureTask) {
+			FutureTask<?> futureTask = (FutureTask<?>) r;
+			try {
+				// final Field field =
+				// futureTask.getClass().getField("callable");
+				// field.setAccessible(true);
+				// final Object callableObject = field.get(futureTask);
+				final Object callableObject = BeanUtil.getProperty(futureTask, "callable");
+				if (callableObject instanceof RunnableWrapper) {
+					final RunnableWrapper runnableWrapper = (RunnableWrapper) callableObject;
+					runnableId = runnableWrapper.getId();
+				} else if (callableObject instanceof CallableWrapper) {
+					final CallableWrapper<?> callableWrapper = (CallableWrapper<?>) callableObject;
+					runnableId = callableWrapper.getId();
+				} else if (callableObject.getClass().getSimpleName().equals("RunnableAdapter")) {
+					futureTask = BeanUtil.getProperty(callableObject, "task");
+					// TODO 请注意，这里使用了递归，有死循环风险
+					return this.getRunnableId(futureTask);
+				}
+			} catch (final Exception e) {
+				MonitoredThreadPoolExecutor.log.error("执行getRunnableId()异常", e);
+
 			}
-		} catch (final Exception e) {
-			MonitoredThreadPoolExecutor.log.error("执行getRunnableId()异常", e);
-
 		}
-
 		return runnableId;
 
 	}
@@ -239,8 +261,21 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			this.counter.getAndIncrement();
 			final Thread newThread = new Thread(r,
 					this.poolName + "-" + r.getClass().getSimpleName() + "-" + this.counter.get());
+			newThread.setPriority(Thread.NORM_PRIORITY);
+			newThread.setDaemon(true);
+			newThread.setUncaughtExceptionHandler(new MyUncaughtExceptionHandler());
 			return newThread;
 		}
 
+		private static class MyUncaughtExceptionHandler implements UncaughtExceptionHandler {
+
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				MonitoredThreadPoolExecutor.log.error("未捕获异常:", e);
+
+			}
+		}
+
 	}
+
 }

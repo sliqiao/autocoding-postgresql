@@ -62,10 +62,14 @@ public class RunnableWrapper implements Callable<Void> {
 
 	@Override
 	public Void call() throws Exception {
-		this.runnable.run();
+		try {
+			this.runnable.run();
+		} catch (final Exception e) {
+			RunnableWrapper.log.error("任务执行发生异常：", e);
+			throw e;
+		}
 		return null;
 	}
-
 
 
 }
