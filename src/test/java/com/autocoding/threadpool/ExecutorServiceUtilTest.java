@@ -112,7 +112,7 @@ public class ExecutorServiceUtilTest {
 
 	/**
 	 * 
-	 * 向线程池提交Callable任务测试
+	 * submit（）方法向线程池提交Callable任务测试
 	 */
 	@Test
 	public void test_callable() throws InterruptedException {
@@ -127,7 +127,7 @@ public class ExecutorServiceUtilTest {
 				@Override
 				public Integer call() throws Exception {
 					try {
-								TimeUnit.SECONDS.sleep(15);
+						TimeUnit.SECONDS.sleep(15);
 					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -143,7 +143,7 @@ public class ExecutorServiceUtilTest {
 
 	/**
 	 * 
-	 * 向线程池提交多个Callable任务,invokeAll()方法，此方法当这多个任务全部执行完成，此方法才返回，否则会一直阻塞
+	 * submit（）方法向线程池提交多个Callable任务,invokeAll()方法，此方法当这多个任务全部执行完成，此方法才返回，否则会一直阻塞
 	 */
 	@Test
 	public void test_invokeAll() throws InterruptedException {
