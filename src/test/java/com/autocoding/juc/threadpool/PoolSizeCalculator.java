@@ -1,4 +1,4 @@
-package com.autocoding.threadpool.demo;
+package com.autocoding.juc.threadpool;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -48,22 +48,22 @@ public abstract class PoolSizeCalculator {
 	 *            the desired maximum work queue size of the thread pool (bytes)
 	 */
 	protected void calculateBoundaries(BigDecimal targetUtilization, BigDecimal targetQueueSizeBytes) {
-		calculateOptimalCapacity(targetQueueSizeBytes);
-		Runnable task = creatTask();
-		start(task);
-		start(task); // warm up phase
-		long cputime = getCurrentThreadCPUTime();
-		start(task); // test intervall
-		cputime = getCurrentThreadCPUTime() - cputime;
-		long waittime = (testtime * 1000000) - cputime;
-		calculateOptimalThreadCount(cputime, waittime, targetUtilization);
+		this.calculateOptimalCapacity(targetQueueSizeBytes);
+		final Runnable task = this.creatTask();
+		this.start(task);
+		this.start(task); // warm up phase
+		long cputime = this.getCurrentThreadCPUTime();
+		this.start(task); // test intervall
+		cputime = this.getCurrentThreadCPUTime() - cputime;
+		final long waittime = this.testtime * 1000000 - cputime;
+		this.calculateOptimalThreadCount(cputime, waittime, targetUtilization);
 	}
 
 	private void calculateOptimalCapacity(BigDecimal targetQueueSizeBytes) {
-		long mem = calculateMemoryUsage();
-		BigDecimal queueCapacity = targetQueueSizeBytes.divide(new BigDecimal(mem), RoundingMode.HALF_UP);
+		final long mem = this.calculateMemoryUsage();
+		final BigDecimal queueCapacity = targetQueueSizeBytes.divide(new BigDecimal(mem), RoundingMode.HALF_UP);
 		System.out.println("Target queue memory usage (bytes): " + targetQueueSizeBytes);
-		System.out.println("createTask() produced " + creatTask().getClass().getName() + " which took " + mem
+		System.out.println("createTask() produced " + this.creatTask().getClass().getName() + " which took " + mem
 				+ " bytes in a queue");
 		System.out.println("Formula: " + targetQueueSizeBytes + " / " + mem);
 		System.out.println("* Recommended queue capacity (bytes): " + queueCapacity);
@@ -81,14 +81,14 @@ public abstract class PoolSizeCalculator {
 	 *            target utilization of the system
 	 */
 	private void calculateOptimalThreadCount(long cpu, long wait, BigDecimal targetUtilization) {
-		BigDecimal waitTime = new BigDecimal(wait);
-		BigDecimal computeTime = new BigDecimal(cpu);
-		BigDecimal numberOfCPU = new BigDecimal(Runtime.getRuntime().availableProcessors());
-		BigDecimal optimalthreadcount = numberOfCPU.multiply(targetUtilization)
+		final BigDecimal waitTime = new BigDecimal(wait);
+		final BigDecimal computeTime = new BigDecimal(cpu);
+		final BigDecimal numberOfCPU = new BigDecimal(Runtime.getRuntime().availableProcessors());
+		final BigDecimal optimalthreadcount = numberOfCPU.multiply(targetUtilization)
 				.multiply(new BigDecimal(1).add(waitTime.divide(computeTime, RoundingMode.HALF_UP)));
 		System.out.println("Number of CPU: " + numberOfCPU);
 		System.out.println("Target utilization: " + targetUtilization);
-		System.out.println("Elapsed time (nanos): " + (testtime * 1000000));
+		System.out.println("Elapsed time (nanos): " + this.testtime * 1000000);
 		System.out.println("Compute time (nanos): " + cpu);
 		System.out.println("Wait time (nanos): " + wait);
 		System.out.println("Formula: " + numberOfCPU + " * " + targetUtilization + " * (1 + " + waitTime + " / "
@@ -111,21 +111,22 @@ public abstract class PoolSizeCalculator {
 			if (++runs > 5) {
 				throw new IllegalStateException("Test not accurate");
 			}
-			expired = false;
+			this.expired = false;
 			start = System.currentTimeMillis();
-			Timer timer = new Timer();
+			final Timer timer = new Timer();
 			timer.schedule(new TimerTask() {
+				@Override
 				public void run() {
-					expired = true;
+					PoolSizeCalculator.this.expired = true;
 				}
-			}, testtime);
-			while (!expired) {
+			}, this.testtime);
+			while (!this.expired) {
 				task.run();
 			}
 			start = System.currentTimeMillis() - start;
 			timer.cancel();
-		} while (Math.abs(start - testtime) > EPSYLON);
-		collectGarbage(3);
+		} while (Math.abs(start - this.testtime) > this.EPSYLON);
+		this.collectGarbage(3);
 	}
 
 	private void collectGarbage(int times) {
@@ -133,7 +134,7 @@ public abstract class PoolSizeCalculator {
 			System.gc();
 			try {
 				Thread.sleep(10);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				Thread.currentThread().interrupt();
 				break;
 			}
@@ -149,22 +150,22 @@ public abstract class PoolSizeCalculator {
 	 *         pools work queue
 	 */
 	public long calculateMemoryUsage() {
-		BlockingQueue<Runnable> queue = createWorkQueue();
-		for (int i = 0; i < SAMPLE_QUEUE_SIZE; i++) {
-			queue.add(creatTask());
+		BlockingQueue<Runnable> queue = this.createWorkQueue();
+		for (int i = 0; i < this.SAMPLE_QUEUE_SIZE; i++) {
+			queue.add(this.creatTask());
 		}
 		long mem0 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		long mem1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		queue = null;
-		collectGarbage(15);
+		this.collectGarbage(15);
 		mem0 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		queue = createWorkQueue();
-		for (int i = 0; i < SAMPLE_QUEUE_SIZE; i++) {
-			queue.add(creatTask());
+		queue = this.createWorkQueue();
+		for (int i = 0; i < this.SAMPLE_QUEUE_SIZE; i++) {
+			queue.add(this.creatTask());
 		}
-		collectGarbage(15);
+		this.collectGarbage(15);
 		mem1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-		return (mem1 - mem0) / SAMPLE_QUEUE_SIZE;
+		return (mem1 - mem0) / this.SAMPLE_QUEUE_SIZE;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package com.autocoding.threadpool.demo;
+package com.autocoding.juc.threadpool;
 
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;

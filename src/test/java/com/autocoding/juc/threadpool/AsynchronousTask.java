@@ -1,4 +1,4 @@
-package com.autocoding.threadpool.demo;
+package com.autocoding.juc.threadpool;
 
 public class AsynchronousTask implements Runnable {
 
@@ -11,7 +11,7 @@ public class AsynchronousTask implements Runnable {
 		System.out.println("AsynchronousTask执行");
 		try {
 			Thread.sleep(30000);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
