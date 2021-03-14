@@ -4,7 +4,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Callable装饰器模式，提供唯一标识符:id
@@ -14,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
  * @date: Oct 28, 2020 3:15:32 PM
  * @param <V>
  */
-@Slf4j
 @Data
 public class CallableWrapper<V> implements Callable<V> {
 	private static String PREFIX = "c-";
@@ -22,6 +20,7 @@ public class CallableWrapper<V> implements Callable<V> {
 	private Callable<V> callable;
 	private String id;
 	private String desc;
+
 	public CallableWrapper(Callable<V> callable) {
 
 		if (null == callable) {

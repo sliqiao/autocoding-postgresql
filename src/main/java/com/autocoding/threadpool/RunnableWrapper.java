@@ -1,6 +1,5 @@
 package com.autocoding.threadpool;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.Data;
@@ -15,12 +14,14 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Data
-public class RunnableWrapper implements Callable<Void> {
+public class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
+	private static int DEFAULT_PRIORITY = 0;
 	private static String PREFIX = "r-";
 	private static AtomicInteger COUNTER = new AtomicInteger(1);
 	private Runnable runnable;
 	private String id;
 	private String desc;
+	private Integer priority = RunnableWrapper.DEFAULT_PRIORITY;
 
 	public static RunnableWrapper newInstance(Runnable runnable) {
 		final String id = RunnableWrapper.PREFIX
@@ -61,15 +62,26 @@ public class RunnableWrapper implements Callable<Void> {
 	}
 
 	@Override
-	public Void call() throws Exception {
+	public void run() {
 		try {
 			this.runnable.run();
 		} catch (final Exception e) {
-			RunnableWrapper.log.error("任务执行发生异常：", e);
+			RunnableWrapper.log.error(String.format("任务:%s 执行异常 ", this.id), e);
 			throw e;
 		}
-		return null;
+
 	}
 
+	/**
+	 * 1、优先级 priority 高的任务，放到队列的前面，先出队列
+	 * 2、如果有任务队列级未设置，则为相等
+	 */
+	@Override
+	public int compareTo(RunnableWrapper o) {
+		if (null != this.getPriority() && null != o.getPriority()) {
+			return -1 * this.getPriority().compareTo(o.getPriority());
+		}
+		return 0;
+	}
 
 }

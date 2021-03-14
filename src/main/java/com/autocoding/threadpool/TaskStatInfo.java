@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.Objects;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 任务执行统计信息
@@ -13,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
  * @author: QiaoLi
  * @date: Oct 13, 2020 5:22:21 PM
  */
-@Slf4j
 @Data
 public class TaskStatInfo {
 	/**
