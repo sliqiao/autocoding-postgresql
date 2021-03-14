@@ -26,7 +26,7 @@ public class ExecutorServiceUtilTest {
 	 * execute()方法向线程池提交Runnable任务测试
 	 */
 	@Test
-	public void test_runnable_executed() throws InterruptedException {
+	public void test_runnable_execute() throws Exception {
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
 		final AtomicInteger counter = new AtomicInteger(1);
 		for (int i = 1; i <= 30; i++) {
@@ -52,38 +52,39 @@ public class ExecutorServiceUtilTest {
 
 	/**
 	 * 
-	 * submit（）方法 向线程池提交Runnable任务测试
+	 * execute()方法向线程池提交Runnable任务测试，并支持任务优先级{目前仅支持execute（）方法提交的任务优先级}
 	 */
 	@Test
-	public void test_runnable() throws InterruptedException {
-
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(10, 10, 100);
-		String id = null;
+	public void test_runnable_execute_priority() throws Exception {
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final AtomicInteger counter = new AtomicInteger(1);
 		for (int i = 1; i <= 30; i++) {
-			id = "task【" + i + "】";
-			final RunnableWrapper runnableWrapper = RunnableWrapper.newInstance(id, new Runnable() {
-				@Override
-				public void run() {
-					try {
-						TimeUnit.SECONDS.sleep(10);
-					} catch (final InterruptedException e) {
-						e.printStackTrace();
-					}
+			final RunnableWrapper runnable = RunnableWrapper
+					.newInstance("task【" + counter.getAndIncrement() + "】", new Runnable() {
+						@Override
+						public void run() {
+							try {
+								TimeUnit.SECONDS.sleep(3);
+							} catch (final InterruptedException e) {
+								e.printStackTrace();
+							}
 
-				}
-			});
-			executorService.submit(runnableWrapper);
+						}
+					});
+			runnable.setPriority(counter.get());
+			runnable.setDesc("任务测试");
+			executorService.execute(runnable);
+
 		}
 
 		TimeUnit.MINUTES.sleep(10);
 	}
-
 	/**
 	 * 
 	 *  execute（）方法向线程池提交Runnable任务测试(任务执行模拟异常)
 	 */
 	@Test
-	public void test_runnable_execute_exception() throws InterruptedException {
+	public void test_runnable_execute_exception() throws Exception {
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
 		final AtomicInteger counter = new AtomicInteger(1);
 		for (int i = 1; i <= 6; i++) {
@@ -110,10 +111,38 @@ public class ExecutorServiceUtilTest {
 
 	/**
 	 * 
+	 * submit（）方法 向线程池提交Runnable任务测试
+	 */
+	@Test
+	public void test_runnable() throws Exception {
+
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(10, 10, 100);
+		String id = null;
+		for (int i = 1; i <= 30; i++) {
+			id = "task【" + i + "】";
+			final RunnableWrapper runnableWrapper = RunnableWrapper.newInstance(id, new Runnable() {
+				@Override
+				public void run() {
+					try {
+						TimeUnit.SECONDS.sleep(10);
+					} catch (final InterruptedException e) {
+						e.printStackTrace();
+					}
+
+				}
+			});
+			executorService.submit(runnableWrapper);
+		}
+
+		TimeUnit.MINUTES.sleep(10);
+	}
+
+	/**
+	 * 
 	 *  submit（）方法向线程池提交Runnable任务测试(任务执行模拟异常)
 	 */
 	@Test
-	public void test_runnable_exception() throws InterruptedException {
+	public void test_runnable_exception() throws Exception {
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
 		String id = null;
 		for (int i = 1; i <= 6; i++) {
@@ -131,6 +160,7 @@ public class ExecutorServiceUtilTest {
 			});
 			// 如果任务执行发生异常，必须要调用future.get()才能抛出异常，否则是看不见异常信息的
 			final Future<?> future = executorService.submit(runnableWrapper);
+			future.get();
 
 		}
 
@@ -142,7 +172,7 @@ public class ExecutorServiceUtilTest {
 	 * submit（）方法向线程池提交Callable任务测试
 	 */
 	@Test
-	public void test_callable() throws InterruptedException {
+	public void test_callable() throws Exception {
 		final AtomicInteger counter = new AtomicInteger();
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(10, 10, 100);
 		String id = null;
@@ -173,7 +203,7 @@ public class ExecutorServiceUtilTest {
 	 * submit（）方法向线程池提交多个Callable任务,invokeAll()方法，此方法当这多个任务全部执行完成，此方法才返回，否则会一直阻塞
 	 */
 	@Test
-	public void test_invokeAll() throws InterruptedException {
+	public void test_invokeAll() throws Exception {
 		final AtomicInteger counter = new AtomicInteger();
 		final List<Callable<Integer>> callableList = new LinkedList<>();
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
@@ -206,7 +236,7 @@ public class ExecutorServiceUtilTest {
 	 * 向线程池提交多个Callable任务,invokeAll()方法，此方法当这多个任务全部执行完成，此方法才返回，否则会一直阻塞
 	 */
 	@Test
-	public void test_invokeAny() throws InterruptedException {
+	public void test_invokeAny() throws Exception {
 		final AtomicInteger counter = new AtomicInteger();
 		final List<Callable<Integer>> callableList = new LinkedList<>();
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);

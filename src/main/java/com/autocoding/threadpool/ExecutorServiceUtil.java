@@ -35,9 +35,9 @@ public final class ExecutorServiceUtil {
 	/** 默认工作队列大小 */
 	private static final int DEFAULT_QUEUE_SIZE = 10000;
 	/** 默认线程池名称*/
-	private static final String DEFAULT_POLL_NAME = "Common-Pool";
+	private static final String DEFAULT_POLL_NAME = "CommonPool";
 	/** 默认可调度线程池名称*/
-	private static final String DEFAULT_SCHEDULED_POLL_NAME = "Common-Scheduled-Pool";
+	private static final String DEFAULT_SCHEDULED_POLL_NAME = "CommonScheduledPool";
 	/** 默认线程池*/
 	private static ExecutorService DEFAULT_EXECUTOR_SERVICE = MonitoredThreadPoolExecutor
 			.create(ExecutorServiceUtil.DEFAULT_POLL_NAME, ExecutorServiceUtil.DEFAULT_INIT_THREADS,
@@ -143,8 +143,6 @@ public final class ExecutorServiceUtil {
 				corePoolSize, maximumPoolSize, 30L, TimeUnit.MINUTES,
 				workQueueSize, new MonitoredThreadPoolExecutor.MyThreadFactory(poolName),
 				rejectedExecutionHandler, false);
-		ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY.put(poolName,
-				(MonitoredThreadPoolExecutor) executorService);
 		return executorService;
 	}
 
@@ -222,7 +220,7 @@ public final class ExecutorServiceUtil {
 				}
 
 			}
-		}, 10, 1, TimeUnit.MINUTES);
+				}, 0, 300, TimeUnit.SECONDS);
 	}
 
 }
