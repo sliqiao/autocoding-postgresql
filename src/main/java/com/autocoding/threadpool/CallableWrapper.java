@@ -14,11 +14,12 @@ import lombok.Data;
  * @param <V>
  */
 @Data
-public class CallableWrapper<V> implements Callable<V> {
+class CallableWrapper<V> implements Callable<V> {
 	private static String PREFIX = "c-";
 	private static AtomicInteger COUNTER = new AtomicInteger(1);
 	private Callable<V> callable;
 	private String id;
+	private String name;
 	private String desc;
 
 	public CallableWrapper(Callable<V> callable) {
@@ -41,6 +42,14 @@ public class CallableWrapper<V> implements Callable<V> {
 		}
 		this.callable = callable;
 		this.id = id;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override

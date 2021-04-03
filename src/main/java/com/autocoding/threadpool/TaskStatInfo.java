@@ -13,11 +13,15 @@ import lombok.Data;
  * @date: Oct 13, 2020 5:22:21 PM
  */
 @Data
-public class TaskStatInfo {
+class TaskStatInfo {
 	/**
 	 * 任务Id
 	 */
 	private String id;
+	/**
+	 * 任务名称[可重复]
+	 */
+	private String name;
 	/**
 	 * 原Runnable/Callable任务的hashCode
 	 */

@@ -17,7 +17,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import cn.hutool.core.bean.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -36,23 +35,30 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 	private String poolName;
 	/**
-	 * key=runnableId , value=RunnableStatInfo
+	 * key=taskId , value=RunnableStatInfo
 	 */
-	private final Map<String, TaskStatInfo> runnableStatInfoMap;
+	private final Map<String, TaskStatInfo> taskStatInfoMap;
 	/**
-	 * key=futureTask的hashCode , value=runnable的id
+	 * key=futureTask的hashCode , value=taskId
 	 */
-	private final Map<Integer, String> idMap;
+	private final Map<Integer, String> taskIdMap;
 
 	private MonitoredThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
 			TimeUnit timeUnit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
 			RejectedExecutionHandler handler) {
 		super(corePoolSize, maximumPoolSize, keepAliveTime, timeUnit, workQueue, threadFactory,
 				handler);
-		this.runnableStatInfoMap = new ConcurrentHashMap<String, TaskStatInfo>(
-				maximumPoolSize * 10);
-		this.idMap = new ConcurrentHashMap<Integer, String>(maximumPoolSize * 10);
+		this.taskStatInfoMap = new ConcurrentHashMap<String, TaskStatInfo>(maximumPoolSize * 10);
+		this.taskIdMap = new ConcurrentHashMap<Integer, String>(maximumPoolSize * 10);
 
+	}
+
+	public String getPoolName() {
+		return this.poolName;
+	}
+
+	public void setPoolName(String poolName) {
+		this.poolName = poolName;
 	}
 
 	/**
@@ -80,127 +86,142 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 	}
 
+	//submit(Callable<T>)、invokeAll(Collection<? extends Callable<T>)提交任务的调用点
 	@Override
 	protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-		if (callable instanceof RunnableWrapper) {
-			final RunnableWrapper runnableWrapper = (RunnableWrapper) callable;
-			final TaskStatInfo runnableStatInfo = new TaskStatInfo();
-			runnableStatInfo.setId(runnableWrapper.getId());
-			runnableStatInfo.setOriHashCode(runnableWrapper.getRunnable().hashCode());
-			runnableStatInfo.setDesc(runnableWrapper.getDesc());
-			runnableStatInfo.setSubmittedTime(new Date());
-			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
-		} else if (callable instanceof CallableWrapper) {
-			final CallableWrapper<T> callableWrapper = (CallableWrapper<T>) callable;
-			final TaskStatInfo runnableStatInfo = new TaskStatInfo();
-			runnableStatInfo.setId(callableWrapper.getId());
-			runnableStatInfo.setOriHashCode(callableWrapper.getCallable().hashCode());
-			runnableStatInfo.setDesc(callableWrapper.getDesc());
-			runnableStatInfo.setSubmittedTime(new Date());
-			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
-		} else {
-			MonitoredThreadPoolExecutor.log.error("非法类型,task:{}", callable.getClass().getName());
-		}
-		return super.newTaskFor(callable);
-	}
-
-	@Override
-	public void execute(Runnable command) {
-		final String runnableId = MonitoredThreadPoolExecutor.getRunnableId(command);
-		TaskStatInfo runnableStatInfo = this.runnableStatInfoMap.get(runnableId);
+		final RunnableFuture<T> runnableFuture = super.newTaskFor(callable);
+		final String taskId = RunnableUtil.getTaskIdAndClear(runnableFuture);
+		final String taskName = RunnableUtil.getTaskNameAndClear();
+		this.taskIdMap.put(runnableFuture.hashCode(), taskId);
+		TaskStatInfo runnableStatInfo = this.taskStatInfoMap.get(taskId);
 		if (null == runnableStatInfo) {
 			runnableStatInfo = new TaskStatInfo();
-			runnableStatInfo.setId(runnableId);
-			runnableStatInfo.setOriHashCode(command.hashCode());
+			runnableStatInfo.setId(taskId);
+			runnableStatInfo.setName(taskName);
+			runnableStatInfo.setOriHashCode(runnableFuture.hashCode());
 			runnableStatInfo.setSubmittedTime(new Date());
 			runnableStatInfo.setStartTime(new Date());
-			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
+			this.taskStatInfoMap.put(taskId, runnableStatInfo);
 		}
-		super.execute(command);
+		return runnableFuture;
+	}
+
+	//execute(Runnable ) 提交任务的调用点/submit(Callable)的执行点
+	@Override
+	public void execute(Runnable command) {
+		String taskId = null;
+		String taskName = null;
+		if (null != this.taskIdMap.get(command.hashCode())) {
+			taskId = this.taskIdMap.get(command.hashCode());
+			super.execute(command);
+			return;
+		} else {
+			taskId = RunnableUtil.getTaskIdAndClear(command);
+			taskName = RunnableUtil.getTaskNameAndClear();
+			this.taskIdMap.put(command.hashCode(), taskId);
+
+			final RunnableWrapper runnable = RunnableWrapper.newInstance(taskName, taskId, command);
+			TaskStatInfo runnableStatInfo = this.taskStatInfoMap.get(taskId);
+			if (null == runnableStatInfo) {
+				runnableStatInfo = new TaskStatInfo();
+				runnableStatInfo.setId(taskId);
+				runnableStatInfo.setName(taskName);
+				runnableStatInfo.setOriHashCode(command.hashCode());
+				runnableStatInfo.setSubmittedTime(new Date());
+				runnableStatInfo.setStartTime(new Date());
+				this.taskStatInfoMap.put(taskId, runnableStatInfo);
+			}
+			super.execute(runnable);
+		}
 	}
 
 	@Override
 	protected void beforeExecute(Thread t, Runnable r) {
 
-		final String runnableId = MonitoredThreadPoolExecutor.getRunnableId(r);
-		this.idMap.put(r.hashCode(), runnableId);
-		TaskStatInfo runnableStatInfo = this.runnableStatInfoMap.get(runnableId);
-		if (null != runnableStatInfo) {
-			runnableStatInfo.setStartTime(new Date());
+		/*	final String taskId = RunnableUtil.getTaskId(r);
+			this.taskIdMap.put(r.hashCode(), taskId);*/
+		final String taskId = this.taskIdMap.get(r.hashCode());
+		String taskName = null;
+		TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
+		if (null != taskStatInfo) {
+			taskStatInfo.setStartTime(new Date());
+			taskName = taskStatInfo.getName();
 		} else {
 			// TODO  ExecutorService.execute(Runnable)提交的任务，不经过newTaskFor（）方法，所以需要在这里初始化TaskStatInfo对象
-			runnableStatInfo = new TaskStatInfo();
-			runnableStatInfo.setId(runnableId);
-			runnableStatInfo.setOriHashCode(r.hashCode());
-			runnableStatInfo.setSubmittedTime(new Date());
-			runnableStatInfo.setStartTime(new Date());
-			this.runnableStatInfoMap.put(runnableStatInfo.getId(), runnableStatInfo);
+			taskStatInfo = new TaskStatInfo();
+			taskStatInfo.setId(taskId);
+			taskStatInfo.setOriHashCode(r.hashCode());
+			taskStatInfo.setSubmittedTime(new Date());
+			taskStatInfo.setStartTime(new Date());
+			this.taskStatInfoMap.put(taskStatInfo.getId(), taskStatInfo);
 		}
 
-		MonitoredThreadPoolExecutor.log.info("RunnableId:{},开始执行！ ", runnableId);
+		MonitoredThreadPoolExecutor.log.info("TaskName:{},TaskId:{},开始执行！ ", taskName, taskId);
 	}
 
 	@Override
-	protected void afterExecute(Runnable r, Throwable t) {
+	protected void afterExecute(Runnable runnable, Throwable throwable) {
 
-		if (r instanceof FutureTask) {
+		if (runnable instanceof FutureTask) {
 			try {
-				final FutureTask<?> f = (FutureTask<?>) r;
+				final FutureTask<?> f = (FutureTask<?>) runnable;
 				f.get();
 			} catch (final InterruptedException e) {
 				MonitoredThreadPoolExecutor.log.error("线程池中断异常", e);
-				t = e;
+				throwable = e;
 			} catch (final ExecutionException e) {
 				MonitoredThreadPoolExecutor.log.error("线程池执行异常", e);
-				t = e;
+				throwable = e;
 			}
 		}
 		Long waitingTimeInMs = null;
 		Long elapsedTimeInMs = null;
 		Long totalTimeInMs = null;
-		final String runnableId = this.idMap.get(r.hashCode());
-		if (null != runnableId) {
-			final TaskStatInfo runnableStatInfo = this.runnableStatInfoMap.get(runnableId);
-			if (null != runnableStatInfo) {
-				final Date startTime = runnableStatInfo.getStartTime();
+		final String taskId = this.taskIdMap.get(runnable.hashCode());
+		String taskName = null;
+		if (null != taskId) {
+			final TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
+			if (null != taskStatInfo) {
+				taskName = taskStatInfo.getName();
+				final Date startTime = taskStatInfo.getStartTime();
 				final Date endTime = new Date();
-				if (null != runnableStatInfo.getSubmittedTime()) {
+				if (null != taskStatInfo.getSubmittedTime()) {
 					waitingTimeInMs = Long.valueOf(
-							startTime.getTime() - runnableStatInfo.getSubmittedTime().getTime());
+							startTime.getTime() - taskStatInfo.getSubmittedTime().getTime());
 				}
 				elapsedTimeInMs = Long.valueOf(endTime.getTime() - startTime.getTime());
 				totalTimeInMs = Long
-						.valueOf(endTime.getTime() - runnableStatInfo.getSubmittedTime().getTime());
+						.valueOf(endTime.getTime() - taskStatInfo.getSubmittedTime().getTime());
 			}
 
 		}
 
-		if (null != t) {
+		if (null != throwable) {
 			MonitoredThreadPoolExecutor.log.error(
-					"RunnableId:{},结束执行【异常】, "
+					"TaskName:{},TaskId:{},结束执行【异常】, "
 							+ "执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 							+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s,throwable:",
-							runnableId, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
+							taskName, taskId, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
 							this.getCorePoolSize(), this.getMaximumPoolSize(), this.getLargestPoolSize(),
 							this.getCompletedTaskCount(), this.getQueue().size(), this.getTaskCount(),
-							this.getKeepAliveTime(TimeUnit.SECONDS), t.getMessage());
+							this.getKeepAliveTime(TimeUnit.SECONDS), throwable.getMessage());
 		} else {
 			if (totalTimeInMs > MonitoredThreadPoolExecutor.EXECUTION_TIME_OUT_IN_MS) {
 				MonitoredThreadPoolExecutor.log.warn(
-						"RunnableId:{},结束执行【执行超时】, "
+						"TaskName:{},TaskId:{},结束执行【执行超时】, "
 								+ "等待时间: {} ms, 执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 								+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s",
-								runnableId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
+								taskName, taskId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
 								this.getPoolSize(), this.getCorePoolSize(), this.getMaximumPoolSize(),
 								this.getLargestPoolSize(), this.getCompletedTaskCount(),
 								this.getQueue().size(), this.getTaskCount(),
 								this.getKeepAliveTime(TimeUnit.SECONDS));
 			} else {
 				MonitoredThreadPoolExecutor.log.info(
-						"RunnableId:{},结束执行, "
+						"TaskName:{},TaskId:{},结束执行, "
 								+ "等待时间: {} ms, 执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 								+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s",
-								runnableId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
+								taskName, taskId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
 								this.getPoolSize(), this.getCorePoolSize(), this.getMaximumPoolSize(),
 								this.getLargestPoolSize(), this.getCompletedTaskCount(),
 								this.getQueue().size(), this.getTaskCount(),
@@ -225,53 +246,6 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 				"ThreadPool Going to immediately shutdown. Executed tasks: {}, Running tasks: {}, Pending tasks: {}",
 				this.getCompletedTaskCount(), this.getActiveCount(), this.getQueue().size());
 		return super.shutdownNow();
-	}
-
-	public String getPoolName() {
-		return this.poolName;
-	}
-
-	public void setPoolName(String poolName) {
-		this.poolName = poolName;
-	}
-
-	/**
-	 * 获取任务Id
-	 * java.util.concurrent.ExecutorCompletionService$QueueingFuture 应用程序不可见
-	 * java.util.concurrent.Executors$RunnableAdapter 应用程序不可见
-	 * @param r
-	 * @return
-	 */
-	public static String getRunnableId(Runnable r) {
-		String runnableId = String.valueOf(r.hashCode());
-		if (r instanceof FutureTask) {
-			final FutureTask<?> futureTask = (FutureTask<?>) r;
-			try {
-				//final Field field = futureTask.getClass().getDeclaredField("callable");
-				//field.setAccessible(true);
-				//final Object callableObject = field.get(futureTask);
-				final Object callableObject = BeanUtil.getProperty(futureTask, "callable");
-				if (callableObject instanceof RunnableWrapper) {
-					final RunnableWrapper runnableWrapper = (RunnableWrapper) callableObject;
-					runnableId = runnableWrapper.getId();
-				} else if (callableObject instanceof CallableWrapper) {
-					final CallableWrapper<?> callableWrapper = (CallableWrapper<?>) callableObject;
-					runnableId = callableWrapper.getId();
-				} else if (callableObject.getClass().getSimpleName().equals("RunnableAdapter")) {
-					r = BeanUtil.getProperty(callableObject, "task");
-					// TODO 请注意，这里使用了递归，有死循环风险
-					return MonitoredThreadPoolExecutor.getRunnableId(r);
-				}
-			} catch (final Exception e) {
-				MonitoredThreadPoolExecutor.log.error("执行getRunnableId()异常", e);
-
-			}
-		} else if (r instanceof RunnableWrapper) {
-			final RunnableWrapper runnableWrapper = (RunnableWrapper) r;
-			runnableId = runnableWrapper.getId();
-		}
-		return runnableId;
-
 	}
 
 	public static class MyThreadFactory implements ThreadFactory {
@@ -303,7 +277,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 			@Override
 			public void uncaughtException(Thread t, Throwable e) {
-				MyUncaughtExceptionHandler.log.error("未捕获异常处理器:", e);
+				//MyUncaughtExceptionHandler.log.error("未捕获异常处理器:", e);
 
 			}
 		}

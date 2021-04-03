@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
-public class ExecutorServiceUtilTest {
+public class ExecutorServiceUtilTest2 {
 
 	/**
 	 * 
@@ -28,57 +28,27 @@ public class ExecutorServiceUtilTest {
 	@Test
 	public void test_runnable_execute() throws Exception {
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
-		final AtomicInteger counter = new AtomicInteger(1);
-		for (int i = 1; i <= 30; i++) {
-			final RunnableWrapper runnable = RunnableWrapper
-					.newInstance("task【" + counter.getAndIncrement() + "】", new Runnable() {
-						@Override
-						public void run() {
-							try {
-								TimeUnit.SECONDS.sleep(3);
-							} catch (final InterruptedException e) {
-								e.printStackTrace();
-							}
+		for (int i = 1; i <= 10; i++) {
+			RunnableContext.setId("task【" + i + "】");
+			RunnableContext.setName("任务测试");
+			final Runnable runnable = new Runnable() {
+				@Override
+				public void run() {
+					try {
+						TimeUnit.SECONDS.sleep(3);
+					} catch (final InterruptedException e) {
+						e.printStackTrace();
+					}
 
-						}
-					});
-			runnable.setDesc("任务测试");
+				}
+			};
 			executorService.execute(runnable);
 
 		}
 
-		TimeUnit.MINUTES.sleep(10);
+		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
-	/**
-	 * 
-	 * execute()方法向线程池提交Runnable任务测试，并支持任务优先级{目前仅支持execute（）方法提交的任务优先级}
-	 */
-	@Test
-	public void test_runnable_execute_priority() throws Exception {
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
-		final AtomicInteger counter = new AtomicInteger(1);
-		for (int i = 1; i <= 30; i++) {
-			final RunnableWrapper runnable = RunnableWrapper
-					.newInstance("task【" + counter.getAndIncrement() + "】", new Runnable() {
-						@Override
-						public void run() {
-							try {
-								TimeUnit.SECONDS.sleep(3);
-							} catch (final InterruptedException e) {
-								e.printStackTrace();
-							}
-
-						}
-					});
-			runnable.setPriority(counter.get());
-			runnable.setDesc("任务测试");
-			executorService.execute(runnable);
-
-		}
-
-		TimeUnit.MINUTES.sleep(10);
-	}
 	/**
 	 * 
 	 *  execute（）方法向线程池提交Runnable任务测试(任务执行模拟异常)
@@ -88,25 +58,25 @@ public class ExecutorServiceUtilTest {
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
 		final AtomicInteger counter = new AtomicInteger(1);
 		for (int i = 1; i <= 6; i++) {
+			RunnableContext.setId("task【" + counter.getAndIncrement() + "】");
+			RunnableContext.setName("任务测试");
+			final Runnable runnable = new Runnable() {
+				@Override
+				public void run() {
+					try {
+						TimeUnit.SECONDS.sleep(3);
+					} catch (final InterruptedException e) {
+						e.printStackTrace();
+					}
+					throw new RuntimeException("异常测试");
 
-			final RunnableWrapper runnableWrapper = RunnableWrapper
-					.newInstance("task【" + counter.getAndIncrement() + "】", new Runnable() {
-						@Override
-						public void run() {
-							try {
-								TimeUnit.SECONDS.sleep(10);
-							} catch (final InterruptedException e) {
-								e.printStackTrace();
-							}
-							throw new RuntimeException("异常测试");
-						}
-					});
+				}
+			};
 			// execute（）方法提交的任务，如果任务执行发生异常， 则由Thread中的uncaughtExceptionHandler进来处理；并且 ThreadPoolExecutor中的afterExecute()方法来拦截到throwable对象
-			executorService.execute(runnableWrapper);
+			executorService.execute(runnable);
 
 		}
-
-		TimeUnit.MINUTES.sleep(10);
+		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -117,10 +87,10 @@ public class ExecutorServiceUtilTest {
 	public void test_runnable() throws Exception {
 
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(10, 10, 100);
-		String id = null;
 		for (int i = 1; i <= 30; i++) {
-			id = "task【" + i + "】";
-			final RunnableWrapper runnableWrapper = RunnableWrapper.newInstance(id, new Runnable() {
+			RunnableContext.setId("task【" + i + "】");
+			RunnableContext.setName("任务测试" + i);
+			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -130,11 +100,11 @@ public class ExecutorServiceUtilTest {
 					}
 
 				}
-			});
-			executorService.submit(runnableWrapper);
+			};
+			executorService.submit(runnable);
 		}
 
-		TimeUnit.MINUTES.sleep(10);
+		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -144,10 +114,10 @@ public class ExecutorServiceUtilTest {
 	@Test
 	public void test_runnable_exception() throws Exception {
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
-		String id = null;
 		for (int i = 1; i <= 6; i++) {
-			id = "task【" + i + "】";
-			final RunnableWrapper runnableWrapper = RunnableWrapper.newInstance(id, new Runnable() {
+			RunnableContext.setId("task【" + i + "】");
+			RunnableContext.setName("任务测试" + i);
+			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -156,15 +126,16 @@ public class ExecutorServiceUtilTest {
 						e.printStackTrace();
 					}
 					throw new RuntimeException("异常测试1");
+
 				}
-			});
+			};
 			// 如果任务执行发生异常，必须要调用future.get()才能抛出异常，否则是看不见异常信息的
-			final Future<?> future = executorService.submit(runnableWrapper);
-			future.get();
+			final Future<?> future = executorService.submit(runnable);
+			//future.get();
 
 		}
 
-		TimeUnit.MINUTES.sleep(10);
+		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -174,28 +145,25 @@ public class ExecutorServiceUtilTest {
 	@Test
 	public void test_callable() throws Exception {
 		final AtomicInteger counter = new AtomicInteger();
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(10, 10, 100);
-		String id = null;
-		for (int i = 1; i <= 30; i++) {
-			id = "task【" + i + "】";
-			final CallableWrapper<Integer> callable = new CallableWrapper<>(id,
-					new Callable<Integer>() {
-
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		for (int i = 1; i <= 6; i++) {
+			RunnableContext.setId("task【" + i + "】");
+			RunnableContext.setName("任务测试" + i);
+			final Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
 					try {
-						TimeUnit.SECONDS.sleep(15);
+						TimeUnit.SECONDS.sleep(5);
 					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
 					return counter.getAndIncrement();
 				}
-			});
-
+			};
 			executorService.submit(callable);
 		}
 
-		TimeUnit.MINUTES.sleep(10);
+		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -207,12 +175,10 @@ public class ExecutorServiceUtilTest {
 		final AtomicInteger counter = new AtomicInteger();
 		final List<Callable<Integer>> callableList = new LinkedList<>();
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
-		String id = null;
-		for (int i = 1; i <= 10; i++) {
-			id = "task【" + i + "】";
-			final CallableWrapper<Integer> callable = new CallableWrapper<>(id,
-					new Callable<Integer>() {
-
+		for (int i = 1; i <= 3; i++) {
+			RunnableContext.setId("task【" + i + "】");
+			RunnableContext.setName("任务测试" + i);
+			final Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
 					try {
@@ -222,13 +188,12 @@ public class ExecutorServiceUtilTest {
 					}
 					return counter.getAndIncrement();
 				}
-			});
-
+			};
 			callableList.add(callable);
 		}
 		final List<Future<Integer>> futureList = executorService.invokeAll(callableList);
-		ExecutorServiceUtilTest.log.info("主线程继续......");
-		TimeUnit.MINUTES.sleep(10);
+		ExecutorServiceUtilTest2.log.info("主线程继续......");
+		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -240,12 +205,10 @@ public class ExecutorServiceUtilTest {
 		final AtomicInteger counter = new AtomicInteger();
 		final List<Callable<Integer>> callableList = new LinkedList<>();
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
-		String id = null;
+		final String id = null;
 		for (int i = 1; i <= 10; i++) {
-			id = "task【" + i + "】";
-			final CallableWrapper<Integer> callable = new CallableWrapper<>(id,
-					new Callable<Integer>() {
-
+			RunnableContext.setId("task【" + i + "】");
+			final Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
 					try {
@@ -255,8 +218,7 @@ public class ExecutorServiceUtilTest {
 					}
 					return counter.getAndIncrement();
 				}
-			});
-
+			};
 			callableList.add(callable);
 		}
 		try {
@@ -265,7 +227,7 @@ public class ExecutorServiceUtilTest {
 			e.printStackTrace();
 		}
 
-		ExecutorServiceUtilTest.log.info("主线程继续......");
+		ExecutorServiceUtilTest2.log.info("主线程继续......");
 		TimeUnit.MINUTES.sleep(10);
 	}
 }

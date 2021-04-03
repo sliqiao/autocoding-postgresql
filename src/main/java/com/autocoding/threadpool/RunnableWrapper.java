@@ -14,26 +14,31 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Data
-public class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
+class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
 	private static int DEFAULT_PRIORITY = 0;
 	private static String PREFIX = "r-";
 	private static AtomicInteger COUNTER = new AtomicInteger(1);
 	private Runnable runnable;
 	private String id;
+	private String name;
 	private String desc;
 	private Integer priority = RunnableWrapper.DEFAULT_PRIORITY;
 
 	public static RunnableWrapper newInstance(Runnable runnable) {
 		final String id = RunnableWrapper.PREFIX
 				+ String.valueOf(RunnableWrapper.COUNTER.getAndIncrement());
-		return new RunnableWrapper(runnable, id);
+		return new RunnableWrapper(runnable, null, id);
 	}
 
 	public static RunnableWrapper newInstance(String id, Runnable runnable) {
-		return new RunnableWrapper(runnable, id);
+		return new RunnableWrapper(runnable, null, id);
 	}
 
-	private RunnableWrapper(Runnable runnable, String id) {
+	public static RunnableWrapper newInstance(String name, String id, Runnable runnable) {
+		return new RunnableWrapper(runnable, name, id);
+	}
+
+	private RunnableWrapper(Runnable runnable, String name, String id) {
 		if (null == runnable) {
 			throw new NullPointerException("runnable不能为Null");
 		}
@@ -53,6 +58,14 @@ public class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
 		this.id = id;
 	}
 
+	public String getName() {
+		return this.name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public String getDesc() {
 		return this.desc;
 	}
@@ -66,7 +79,8 @@ public class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
 		try {
 			this.runnable.run();
 		} catch (final Exception e) {
-			RunnableWrapper.log.error(String.format("任务:%s 执行异常 ", this.id), e);
+			RunnableWrapper.log
+			.error(String.format("taskName:%s ,taskId:%s,执行异常 ", this.name, this.id), e);
 			throw e;
 		}
 
