@@ -20,6 +20,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.autocoding.threadpool.TaskStatInfo.State;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -53,6 +55,8 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	private final Set<String> completedTaskIdSet = new CopyOnWriteArraySet<>();
 	/**被拒绝执行的任务taskId集合 */
 	private final Set<String> rejectedTaskIdSet = new CopyOnWriteArraySet<>();
+	/** key=taskId , value=State  */
+	private static final Map<String, TaskStatInfo.State> TASK_ID_STATE_MAP = new ConcurrentHashMap<>();
 
 	private MonitoredThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
 			TimeUnit timeUnit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
@@ -135,6 +139,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			this.taskStatInfoMap.put(taskId, runnableStatInfo);
 		}
 		this.watingTaskIdSet.add(taskId);
+		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.WATING);
 		return runnableFuture;
 	}
 
@@ -150,7 +155,6 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		} else {
 			taskId = RunnableUtil.getTaskIdAndClear(command);
 			taskName = RunnableUtil.getTaskNameAndClear();
-
 			final RunnableWrapper runnable = RunnableWrapper.newInstance(taskName, taskId, command);
 			TaskStatInfo runnableStatInfo = this.taskStatInfoMap.get(taskId);
 			if (null == runnableStatInfo) {
@@ -164,6 +168,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			}
 			this.taskIdMap.put(runnable.hashCode(), taskId);
 			this.watingTaskIdSet.add(taskId);
+			MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.WATING);
 			super.execute(runnable);
 		}
 	}
@@ -190,7 +195,9 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		}
 		MonitoredThreadPoolExecutor.log.info("TaskName:{},TaskId:{},开始执行！ ", taskName, taskId);
 		this.executingTaskIdSet.add(taskId);
+		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.EXECUTING);
 		this.watingTaskIdSet.remove(taskId);
+
 		super.beforeExecute(thread, runnable);
 	}
 
@@ -272,6 +279,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		this.taskStatInfoMap.remove(taskId);
 		this.executingTaskIdSet.remove(taskId);
 		this.completedTaskIdSet.add(taskId);
+		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.COMPLETED);
 	}
 
 	@Override
@@ -357,6 +365,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			if (executor instanceof MonitoredThreadPoolExecutor) {
 				final MonitoredThreadPoolExecutor monitoredThreadPoolExecutor = (MonitoredThreadPoolExecutor) executor;
 				monitoredThreadPoolExecutor.getRejectedTaskIdSet().add(taskId);
+				MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.REJECTED);
 				monitoredThreadPoolExecutor.getWatingTaskIdSet().remove(taskId);
 			}
 			this.rejectedExecutionHandler.rejectedExecution(r, executor);
@@ -364,21 +373,30 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		}
 	}
 
-	public void clearTaskIdSet() {
-
-		if (this.watingTaskIdSet.size() > 100) {
-			this.watingTaskIdSet.clear();
-		}
-		if (this.executingTaskIdSet.size() > 100) {
-			this.executingTaskIdSet.clear();
-		}
-		if (this.completedTaskIdSet.size() > 100) {
-			this.completedTaskIdSet.clear();
-		}
-		if (this.rejectedTaskIdSet.size() > 100) {
-			this.rejectedTaskIdSet.clear();
-		}
+	public void clearTaskIdStatInfo() {
+		this.watingTaskIdSet.clear();
+		this.executingTaskIdSet.clear();
+		this.completedTaskIdSet.clear();
+		this.rejectedTaskIdSet.clear();
+		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.clear();
 		MonitoredThreadPoolExecutor.log.info(
 				"清除统计数据：watingTaskIdSet、executingTaskIdSet、completedTaskIdSet、rejectedTaskIdSet");
+	}
+
+	/**
+	 * 查询任务状态 
+	 * @param taskId
+	 * @return
+	 */
+	public static State queryTaskState(String taskId) {
+		return MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.get(taskId);
+	}
+
+	/**
+	 * 查询任务状态 
+	 * @return
+	 */
+	public static Map<String, TaskStatInfo.State> queryTaskState() {
+		return MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP;
 	}
 }

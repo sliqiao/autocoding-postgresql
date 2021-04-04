@@ -63,4 +63,15 @@ class TaskStatInfo {
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), this.id);
 	}
+
+	public static enum State {
+		/** 等待中 */
+		WATING,
+		/** 正在执行 */
+		EXECUTING,
+		/** 已完成 */
+		COMPLETED,
+		/** 被拒绝  */
+		REJECTED;
+	}
 }

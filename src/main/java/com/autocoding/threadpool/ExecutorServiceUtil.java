@@ -15,8 +15,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.PreDestroy;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -181,7 +179,6 @@ public final class ExecutorServiceUtil {
 		return executorService;
 	}
 
-	@PreDestroy
 	public void destroy() throws Exception {
 		ExecutorServiceUtil.log.info("spirng容器关闭时，关闭通用线程池:{}",
 				ExecutorServiceUtil.DEFAULT_POLL_NAME);
@@ -206,6 +203,7 @@ public final class ExecutorServiceUtil {
 	}
 
 	private static void init() {
+		//周期性的输出统计日志
 		ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE
 		.scheduleWithFixedDelay(new Runnable() {
 
@@ -220,7 +218,25 @@ public final class ExecutorServiceUtil {
 				}
 
 			}
-				}, 0, 5, TimeUnit.SECONDS);
+				}, 0, 15, TimeUnit.SECONDS);
+		//周期性的清理统计信息，避免OOM
+		ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE
+		.scheduleWithFixedDelay(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					for (final MonitoredThreadPoolExecutor executor : ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY
+							.values()) {
+						executor.clearTaskIdStatInfo();
+					}
+				} catch (final Exception e) {
+					ExecutorServiceUtil.log
+					.error("执行MonitoredThreadPoolExecutorUtil.log()异常", e);
+				}
+
+			}
+		}, 1, 1, TimeUnit.HOURS);
 	}
 
 }
