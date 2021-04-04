@@ -98,4 +98,9 @@ class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
 		return 0;
 	}
 
+	@Override
+	public String toString() {
+		return "RunnableWrapper [id=" + this.id + ", name=" + this.name + "]";
+	}
+
 }

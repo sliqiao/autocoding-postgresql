@@ -39,13 +39,13 @@ public final class ExecutorServiceUtil {
 	/** 默认可调度线程池名称*/
 	private static final String DEFAULT_SCHEDULED_POLL_NAME = "CommonScheduledPool";
 	/** 默认线程池*/
-	private static ExecutorService DEFAULT_EXECUTOR_SERVICE = MonitoredThreadPoolExecutor
-			.create(ExecutorServiceUtil.DEFAULT_POLL_NAME, ExecutorServiceUtil.DEFAULT_INIT_THREADS,
-					ExecutorServiceUtil.DEFAULT_MAX_THREADS, 3600L, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>(ExecutorServiceUtil.DEFAULT_QUEUE_SIZE),
-					new MonitoredThreadPoolExecutor.MyThreadFactory(
-							ExecutorServiceUtil.DEFAULT_POLL_NAME),
-					new ThreadPoolExecutor.CallerRunsPolicy());
+	private static ExecutorService DEFAULT_EXECUTOR_SERVICE = MonitoredThreadPoolExecutor.create(
+			ExecutorServiceUtil.DEFAULT_POLL_NAME, ExecutorServiceUtil.DEFAULT_INIT_THREADS,
+			ExecutorServiceUtil.DEFAULT_MAX_THREADS, 3600L, TimeUnit.SECONDS,
+			new LinkedBlockingQueue<Runnable>(ExecutorServiceUtil.DEFAULT_QUEUE_SIZE),
+			new MonitoredThreadPoolExecutor.MyThreadFactory(ExecutorServiceUtil.DEFAULT_POLL_NAME),
+
+			new ThreadPoolExecutor.CallerRunsPolicy());
 	/** 默认可调度线程池*/
 	private static final ScheduledExecutorService DEFAULT_SCHEDULED_EXECUTOR_SERVICE = new ScheduledThreadPoolExecutor(
 			Runtime.getRuntime().availableProcessors(),
@@ -139,10 +139,10 @@ public final class ExecutorServiceUtil {
 		}
 		final String poolName = ExecutorServiceUtil.genPoolName();
 
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(
-				corePoolSize, maximumPoolSize, 30L, TimeUnit.MINUTES,
-				workQueueSize, new MonitoredThreadPoolExecutor.MyThreadFactory(poolName),
-				rejectedExecutionHandler, false);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(corePoolSize,
+				maximumPoolSize, 30L, TimeUnit.MINUTES, workQueueSize,
+				new MonitoredThreadPoolExecutor.MyThreadFactory(poolName), rejectedExecutionHandler,
+				false);
 		return executorService;
 	}
 
@@ -220,7 +220,7 @@ public final class ExecutorServiceUtil {
 				}
 
 			}
-				}, 0, 300, TimeUnit.SECONDS);
+				}, 0, 5, TimeUnit.SECONDS);
 	}
 
 }

@@ -15,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
- * @author Administrator
+ * ExecutorServiceUtil各种场景的单元测试用例
  *
  */
 @Slf4j
-public class ExecutorServiceUtilTest2 {
+public class ExecutorServiceUtilTest {
 
 	/**
 	 * 
@@ -27,7 +27,7 @@ public class ExecutorServiceUtilTest2 {
 	 */
 	@Test
 	public void test_runnable_execute() throws Exception {
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 3);
 		for (int i = 1; i <= 10; i++) {
 			RunnableContext.setId("task【" + i + "】");
 			RunnableContext.setName("任务测试");
@@ -192,7 +192,7 @@ public class ExecutorServiceUtilTest2 {
 			callableList.add(callable);
 		}
 		final List<Future<Integer>> futureList = executorService.invokeAll(callableList);
-		ExecutorServiceUtilTest2.log.info("主线程继续......");
+		ExecutorServiceUtilTest.log.info("主线程继续......");
 		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
@@ -227,7 +227,7 @@ public class ExecutorServiceUtilTest2 {
 			e.printStackTrace();
 		}
 
-		ExecutorServiceUtilTest2.log.info("主线程继续......");
+		ExecutorServiceUtilTest.log.info("主线程继续......");
 		TimeUnit.MINUTES.sleep(10);
 	}
 }

@@ -4,12 +4,15 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
@@ -42,6 +45,14 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	 * key=futureTask的hashCode , value=taskId
 	 */
 	private final Map<Integer, String> taskIdMap;
+	/** 等待执行的任务taskId集合 */
+	private final Set<String> watingTaskIdSet = new CopyOnWriteArraySet<>();
+	/** 正在执行的任务taskId集合 */
+	private final Set<String> executingTaskIdSet = new CopyOnWriteArraySet<>();
+	/** 已经完成的任务taskId集合 */
+	private final Set<String> completedTaskIdSet = new CopyOnWriteArraySet<>();
+	/**被拒绝执行的任务taskId集合 */
+	private final Set<String> rejectedTaskIdSet = new CopyOnWriteArraySet<>();
 
 	private MonitoredThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
 			TimeUnit timeUnit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
@@ -61,6 +72,22 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		this.poolName = poolName;
 	}
 
+	public Set<String> getWatingTaskIdSet() {
+		return this.watingTaskIdSet;
+	}
+
+	public Set<String> getExecutingTaskIdSet() {
+		return this.executingTaskIdSet;
+	}
+
+	public Set<String> getCompletedTaskIdSet() {
+		return this.completedTaskIdSet;
+	}
+
+	public Set<String> getRejectedTaskIdSet() {
+		return this.rejectedTaskIdSet;
+	}
+
 	/**
 	 * 静态工厂方法：创建可监控的线程池
 	 *
@@ -77,11 +104,15 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	public static ExecutorService create(String poolName, int corePoolSize, int maximumPoolSize,
 			long keepAliveTime, TimeUnit timeUnit, BlockingQueue<Runnable> workQueue,
 			ThreadFactory threadFactory, RejectedExecutionHandler handler) {
-
+		final MyRejectedExecutionHandler wrappedHandler = new MonitoredThreadPoolExecutor.MyRejectedExecutionHandler(
+				handler);
 		final MonitoredThreadPoolExecutor monitoredThreadPoolExecutor = new MonitoredThreadPoolExecutor(
 				corePoolSize, maximumPoolSize, keepAliveTime, timeUnit, workQueue, threadFactory,
-				handler);
+				wrappedHandler);
+		wrappedHandler.setMonitoredThreadPoolExecutor(monitoredThreadPoolExecutor);
 		monitoredThreadPoolExecutor.setPoolName(poolName);
+		//预启动核心线程
+		monitoredThreadPoolExecutor.prestartCoreThread();
 		return monitoredThreadPoolExecutor;
 
 	}
@@ -103,6 +134,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			runnableStatInfo.setStartTime(new Date());
 			this.taskStatInfoMap.put(taskId, runnableStatInfo);
 		}
+		this.watingTaskIdSet.add(taskId);
 		return runnableFuture;
 	}
 
@@ -118,7 +150,6 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		} else {
 			taskId = RunnableUtil.getTaskIdAndClear(command);
 			taskName = RunnableUtil.getTaskNameAndClear();
-			this.taskIdMap.put(command.hashCode(), taskId);
 
 			final RunnableWrapper runnable = RunnableWrapper.newInstance(taskName, taskId, command);
 			TaskStatInfo runnableStatInfo = this.taskStatInfoMap.get(taskId);
@@ -131,16 +162,18 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 				runnableStatInfo.setStartTime(new Date());
 				this.taskStatInfoMap.put(taskId, runnableStatInfo);
 			}
+			this.taskIdMap.put(runnable.hashCode(), taskId);
+			this.watingTaskIdSet.add(taskId);
 			super.execute(runnable);
 		}
 	}
 
 	@Override
-	protected void beforeExecute(Thread t, Runnable r) {
+	protected void beforeExecute(Thread thread, Runnable runnable) {
 
 		/*	final String taskId = RunnableUtil.getTaskId(r);
 			this.taskIdMap.put(r.hashCode(), taskId);*/
-		final String taskId = this.taskIdMap.get(r.hashCode());
+		final String taskId = this.taskIdMap.get(runnable.hashCode());
 		String taskName = null;
 		TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
 		if (null != taskStatInfo) {
@@ -150,21 +183,23 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			// TODO  ExecutorService.execute(Runnable)提交的任务，不经过newTaskFor（）方法，所以需要在这里初始化TaskStatInfo对象
 			taskStatInfo = new TaskStatInfo();
 			taskStatInfo.setId(taskId);
-			taskStatInfo.setOriHashCode(r.hashCode());
+			taskStatInfo.setOriHashCode(runnable.hashCode());
 			taskStatInfo.setSubmittedTime(new Date());
 			taskStatInfo.setStartTime(new Date());
 			this.taskStatInfoMap.put(taskStatInfo.getId(), taskStatInfo);
 		}
-
 		MonitoredThreadPoolExecutor.log.info("TaskName:{},TaskId:{},开始执行！ ", taskName, taskId);
+		this.executingTaskIdSet.add(taskId);
+		this.watingTaskIdSet.remove(taskId);
+		super.beforeExecute(thread, runnable);
 	}
 
 	@Override
 	protected void afterExecute(Runnable runnable, Throwable throwable) {
-
-		if (runnable instanceof FutureTask) {
+		super.afterExecute(runnable, throwable);
+		if (null == throwable && runnable instanceof Future<?>) {
 			try {
-				final FutureTask<?> f = (FutureTask<?>) runnable;
+				final Future<?> f = (Future<?>) runnable;
 				f.get();
 			} catch (final InterruptedException e) {
 				MonitoredThreadPoolExecutor.log.error("线程池中断异常", e);
@@ -172,6 +207,9 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			} catch (final ExecutionException e) {
 				MonitoredThreadPoolExecutor.log.error("线程池执行异常", e);
 				throwable = e;
+			} catch (final CancellationException e) {
+				MonitoredThreadPoolExecutor.log.error("线程池任务取消异常", e);
+				throwable = e.getCause();
 			}
 		}
 		Long waitingTimeInMs = null;
@@ -229,7 +267,11 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			}
 
 		}
-
+		//TODO 不再使用的数据清理掉，避免内存溢出
+		this.taskIdMap.remove(runnable.hashCode());
+		this.taskStatInfoMap.remove(taskId);
+		this.executingTaskIdSet.remove(taskId);
+		this.completedTaskIdSet.add(taskId);
 	}
 
 	@Override
@@ -289,20 +331,54 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	 * @author Administrator
 	 *
 	 */
-	public static class MyRejectedExecutionHandler implements RejectedExecutionHandler {
+	private static class MyRejectedExecutionHandler implements RejectedExecutionHandler {
 		private final RejectedExecutionHandler rejectedExecutionHandler;
+		private MonitoredThreadPoolExecutor monitoredThreadPoolExecutor;
 
 		public MyRejectedExecutionHandler(RejectedExecutionHandler rejectedExecutionHandler) {
 			this.rejectedExecutionHandler = rejectedExecutionHandler;
 		}
 
+		public void setMonitoredThreadPoolExecutor(
+				MonitoredThreadPoolExecutor monitoredThreadPoolExecutor) {
+			this.monitoredThreadPoolExecutor = monitoredThreadPoolExecutor;
+		}
+
 		@Override
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-			MonitoredThreadPoolExecutor.log.info("丢弃策略执行...");
-			final String warnningMsg = String.format("告警,线程池满了，任务列队也满了，丢弃任务！");
-			MonitoredThreadPoolExecutor.log.error(warnningMsg);
+			final String warnningMsg = String.format("告警,线程池满了，任务列队也满了，拒绝策略执行...");
+			String taskId = null;
+			if (null != this.monitoredThreadPoolExecutor.taskIdMap.get(r.hashCode())) {
+				taskId = this.monitoredThreadPoolExecutor.taskIdMap.get(r.hashCode());
+			} else {
+				taskId = String.valueOf(r.hashCode());
+			}
+			MonitoredThreadPoolExecutor.log.error("{}:任务未执行!" + warnningMsg, taskId);
+			if (executor instanceof MonitoredThreadPoolExecutor) {
+				final MonitoredThreadPoolExecutor monitoredThreadPoolExecutor = (MonitoredThreadPoolExecutor) executor;
+				monitoredThreadPoolExecutor.getRejectedTaskIdSet().add(taskId);
+				monitoredThreadPoolExecutor.getWatingTaskIdSet().remove(taskId);
+			}
 			this.rejectedExecutionHandler.rejectedExecution(r, executor);
 
 		}
+	}
+
+	public void clearTaskIdSet() {
+
+		if (this.watingTaskIdSet.size() > 100) {
+			this.watingTaskIdSet.clear();
+		}
+		if (this.executingTaskIdSet.size() > 100) {
+			this.executingTaskIdSet.clear();
+		}
+		if (this.completedTaskIdSet.size() > 100) {
+			this.completedTaskIdSet.clear();
+		}
+		if (this.rejectedTaskIdSet.size() > 100) {
+			this.rejectedTaskIdSet.clear();
+		}
+		MonitoredThreadPoolExecutor.log.info(
+				"清除统计数据：watingTaskIdSet、executingTaskIdSet、completedTaskIdSet、rejectedTaskIdSet");
 	}
 }
