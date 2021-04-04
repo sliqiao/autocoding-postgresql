@@ -218,25 +218,38 @@ public final class ExecutorServiceUtil {
 				}
 
 			}
-				}, 0, 15, TimeUnit.SECONDS);
-		//周期性的清理统计信息，避免OOM
+		}, 0, 15, TimeUnit.SECONDS);
+		//周期性的清除统计日志数据
 		ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE
 		.scheduleWithFixedDelay(new Runnable() {
 
 			@Override
 			public void run() {
-				try {
-					for (final MonitoredThreadPoolExecutor executor : ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY
-							.values()) {
-						executor.clearTaskIdStatInfo();
-					}
-				} catch (final Exception e) {
-					ExecutorServiceUtil.log
-					.error("执行MonitoredThreadPoolExecutorUtil.log()异常", e);
+				for (final MonitoredThreadPoolExecutor e : ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY
+						.values()) {
+					e.clearTaskIdStatInfo();
 				}
 
 			}
-		}, 1, 1, TimeUnit.HOURS);
+		}, 0, 1, TimeUnit.HOURS);
+		//保留任务执行状态1小时，之后进行删除
+		ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						final String taskId = MonitoredThreadPoolExecutor.DELAY_QUEUE_OF_DELETE_TASK_STATE
+								.take().getData();
+						MonitoredThreadPoolExecutor.clearTaskIdStatInfo(taskId);
+					} catch (final InterruptedException e) {
+						ExecutorServiceUtil.log.error("保留任务执行状态1小时，之后进行删除", e);
+					}
+				}
+
+			}
+		});
+
 	}
 
 }

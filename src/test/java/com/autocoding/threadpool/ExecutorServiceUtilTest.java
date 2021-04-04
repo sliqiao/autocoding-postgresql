@@ -45,9 +45,9 @@ public class ExecutorServiceUtilTest {
 			executorService.execute(runnable);
 
 		}
-		ExecutorServiceUtilTest.log
-		.error("任务状态查询结果：" + MonitoredThreadPoolExecutor.queryTaskState().toString());
+
 		executorService.awaitTermination(10, TimeUnit.MINUTES);
+		TimeUnit.MINUTES.sleep(10);
 	}
 
 	/**

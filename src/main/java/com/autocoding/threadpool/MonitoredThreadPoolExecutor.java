@@ -10,6 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -33,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
+	/** 默认保留任务信息时间长度：分钟  */
+	private static final int DEFAULT_KEEP_TIME_IN_MINUTES_FOR_TASKINFO = 60;
 	/**
 	 * 线程池中任务执行超时：毫秒
 	 */
@@ -57,6 +60,9 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	private final Set<String> rejectedTaskIdSet = new CopyOnWriteArraySet<>();
 	/** key=taskId , value=State  */
 	private static final Map<String, TaskStatInfo.State> TASK_ID_STATE_MAP = new ConcurrentHashMap<>();
+
+	/** key=taskId , value=State  */
+	public static final DelayQueue<DeleteTaskStateDelayedModel<String>> DELAY_QUEUE_OF_DELETE_TASK_STATE = new DelayQueue<>();
 
 	private MonitoredThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
 			TimeUnit timeUnit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
@@ -279,6 +285,10 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		this.taskStatInfoMap.remove(taskId);
 		this.executingTaskIdSet.remove(taskId);
 		this.completedTaskIdSet.add(taskId);
+		MonitoredThreadPoolExecutor.DELAY_QUEUE_OF_DELETE_TASK_STATE
+		.add(new DeleteTaskStateDelayedModel<String>(taskId,
+				MonitoredThreadPoolExecutor.DEFAULT_KEEP_TIME_IN_MINUTES_FOR_TASKINFO,
+				TimeUnit.MINUTES));
 		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.COMPLETED);
 	}
 
@@ -366,6 +376,10 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 				final MonitoredThreadPoolExecutor monitoredThreadPoolExecutor = (MonitoredThreadPoolExecutor) executor;
 				monitoredThreadPoolExecutor.getRejectedTaskIdSet().add(taskId);
 				MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.REJECTED);
+				MonitoredThreadPoolExecutor.DELAY_QUEUE_OF_DELETE_TASK_STATE
+				.add(new DeleteTaskStateDelayedModel<String>(taskId,
+						MonitoredThreadPoolExecutor.DEFAULT_KEEP_TIME_IN_MINUTES_FOR_TASKINFO,
+						TimeUnit.MINUTES));
 				monitoredThreadPoolExecutor.getWatingTaskIdSet().remove(taskId);
 			}
 			this.rejectedExecutionHandler.rejectedExecution(r, executor);
@@ -378,9 +392,17 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		this.executingTaskIdSet.clear();
 		this.completedTaskIdSet.clear();
 		this.rejectedTaskIdSet.clear();
-		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.clear();
 		MonitoredThreadPoolExecutor.log.info(
 				"清除统计数据：watingTaskIdSet、executingTaskIdSet、completedTaskIdSet、rejectedTaskIdSet");
+	}
+
+	/**
+	 * 清除任务执行状态信息[任务执行状态保留1小时]
+	 * @param taskId
+	 */
+	public static void clearTaskIdStatInfo(String taskId) {
+		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.remove(taskId);
+		MonitoredThreadPoolExecutor.log.info("清除任务执行状态数据：taskId：{} ", taskId);
 	}
 
 	/**
