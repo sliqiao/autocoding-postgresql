@@ -22,6 +22,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.autocoding.threadpool.TaskStatInfo.State;
+import com.autocoding.threadpool.warn.DingDingMsg;
+import com.autocoding.threadpool.warn.DingDingMsgService;
+import com.autocoding.threadpool.warn.DingDingMsgServiceImpl;
+import com.autocoding.threadpool.warn.RequestSourceEnum;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -383,7 +387,12 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 				monitoredThreadPoolExecutor.getWatingTaskIdSet().remove(taskId);
 			}
 			this.rejectedExecutionHandler.rejectedExecution(r, executor);
-
+			final String text = String.format("告警,线程池满了，任务列队也满了，丢弃任务:" + taskId);
+			final DingDingMsg dingDingMsgForLink = new DingDingMsg(new DingDingMsg.Link(text,
+					"线程池丢弃Runnable任务", "http://baidu.com", "http://baidu.com"));
+			final DingDingMsgService dingDingMsgService = DingDingMsgServiceImpl.getInstance();
+			dingDingMsgService.sent(RequestSourceEnum.SYSTEM_DEPLOYMENT, dingDingMsgForLink);
+			this.rejectedExecutionHandler.rejectedExecution(r, executor);
 		}
 	}
 

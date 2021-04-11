@@ -66,7 +66,7 @@ public final class ExecutorServiceUtil {
 	 * 获取默认线程池
 	 * @return
 	 */
-	public ExecutorService getExecutorService() {
+	public static ExecutorService getExecutorService() {
 		return ExecutorServiceUtil.DEFAULT_EXECUTOR_SERVICE;
 	}
 
@@ -74,7 +74,7 @@ public final class ExecutorServiceUtil {
 	 * 获取默认可调度线程池
 	 * @return
 	 */
-	public ScheduledExecutorService getDefaultScheduledExecutorService() {
+	public static ScheduledExecutorService getDefaultScheduledExecutorService() {
 		return ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE;
 	}
 
