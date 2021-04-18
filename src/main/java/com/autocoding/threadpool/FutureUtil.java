@@ -32,6 +32,7 @@ public final class FutureUtil {
 
 	public static interface Callback<T> {
 		T sucess(T result);
+
 		void onError(Throwable throwable);
 	}
 }
