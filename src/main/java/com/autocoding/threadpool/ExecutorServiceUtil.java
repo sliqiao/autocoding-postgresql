@@ -50,7 +50,7 @@ public final class ExecutorServiceUtil {
 			new MonitoredThreadPoolExecutor.MyThreadFactory(
 					ExecutorServiceUtil.DEFAULT_SCHEDULED_POLL_NAME));
 	/** 线程池注册表*/
-	private static final Map<String, MonitoredThreadPoolExecutor> EXECUTOR_SERVICE_REGISTRY = new HashMap<String, MonitoredThreadPoolExecutor>();
+	public static final Map<String, MonitoredThreadPoolExecutor> EXECUTOR_SERVICE_REGISTRY = new HashMap<String, MonitoredThreadPoolExecutor>();
 	/** 线程池计数器*/
 	private static final AtomicInteger POOL_COUNTER = new AtomicInteger(0);
 
@@ -196,7 +196,7 @@ public final class ExecutorServiceUtil {
 	/**
 	 *生成线程池名称
 	 */
-	private static String genPoolName() {
+	public static String genPoolName() {
 		final String poolName = ExecutorServiceUtil.DEFAULT_POLL_NAME + "-"
 				+ ExecutorServiceUtil.POOL_COUNTER.getAndIncrement();
 		return poolName;

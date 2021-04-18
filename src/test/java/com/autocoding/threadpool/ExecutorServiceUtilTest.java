@@ -146,9 +146,9 @@ public class ExecutorServiceUtilTest {
 	 */
 	@Test
 	public void test_callable() throws Exception {
-		final AtomicInteger counter = new AtomicInteger();
+		final AtomicInteger counter = new AtomicInteger(100);
 		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
-		for (int i = 1; i <= 6; i++) {
+		for (int i = 1; i <= 1; i++) {
 			RunnableContext.setId("task【" + i + "】");
 			RunnableContext.setName("任务测试" + i);
 			final Callable<Integer> callable = new Callable<Integer>() {
@@ -162,7 +162,21 @@ public class ExecutorServiceUtilTest {
 					return counter.getAndIncrement();
 				}
 			};
-			executorService.submit(callable);
+			final Future<Integer> future = executorService.submit(callable);
+			FutureUtil.get(future, new FutureUtil.Callback<Integer>() {
+
+				@Override
+				public Integer sucess(Integer result) {
+					System.err.println("测试回调:" + result);
+					return null;
+				}
+
+				@Override
+				public void onError(Throwable throwable) {
+					System.err.println("测试回调:" + throwable.toString());
+
+				}
+			});
 		}
 
 		executorService.awaitTermination(10, TimeUnit.MINUTES);

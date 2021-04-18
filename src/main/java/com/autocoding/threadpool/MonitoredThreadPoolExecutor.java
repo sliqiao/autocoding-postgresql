@@ -27,6 +27,7 @@ import com.autocoding.threadpool.warn.DingDingMsgService;
 import com.autocoding.threadpool.warn.DingDingMsgServiceImpl;
 import com.autocoding.threadpool.warn.RequestSourceEnum;
 
+import cn.hutool.core.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -429,5 +430,89 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	 */
 	public static Map<String, TaskStatInfo.State> queryTaskState() {
 		return MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP;
+	}
+
+	public static Builder builder() {
+		return new Builder();
+
+	}
+
+	/**
+	 * 
+	 * 因为构建器参数过多，并且需要实现自定义，所以这里用建造者模式比较适合
+	 *
+	 */
+	public static class Builder {
+		private int corePoolSize;
+		private int maximumPoolSize;
+		private long keepAliveTime;
+		private TimeUnit timeUnit;
+		private BlockingQueue<Runnable> workQueue;
+		private ThreadFactory threadFactory;
+		private RejectedExecutionHandler rejectedExecutionHandler;
+
+		private Builder() {
+		}
+
+		public Builder setCorePoolSize(int corePoolSize) {
+			this.corePoolSize = corePoolSize;
+			return this;
+		}
+
+		public Builder setMaximumPoolSize(int maximumPoolSize) {
+			this.maximumPoolSize = maximumPoolSize;
+			return this;
+		}
+
+		public Builder setKeepAliveTime(long keepAliveTime) {
+			this.keepAliveTime = keepAliveTime;
+			return this;
+		}
+
+		public Builder setTimeUnit(TimeUnit timeUnit) {
+			this.timeUnit = timeUnit;
+			return this;
+		}
+
+		public Builder setWorkQueue(BlockingQueue<Runnable> workQueue) {
+			this.workQueue = workQueue;
+			return this;
+		}
+
+		public Builder setThreadFactory(ThreadFactory threadFactory) {
+			this.threadFactory = threadFactory;
+			return this;
+		}
+
+		public Builder setRejectedExecutionHandler(
+				RejectedExecutionHandler rejectedExecutionHandler) {
+			this.rejectedExecutionHandler = rejectedExecutionHandler;
+			return this;
+		}
+
+		private void check() {
+			Assert.notNull(this.corePoolSize);
+			Assert.notNull(this.maximumPoolSize);
+			Assert.notNull(this.keepAliveTime);
+			Assert.notNull(this.timeUnit);
+			Assert.notNull(this.workQueue);
+			Assert.notNull(this.threadFactory);
+			Assert.notNull(this.rejectedExecutionHandler);
+		}
+
+		public ExecutorService build() {
+			this.check();
+			final String poolName = ExecutorServiceUtil.genPoolName();
+			if (this.maximumPoolSize < this.corePoolSize) {
+				this.maximumPoolSize = this.corePoolSize;
+			}
+			final BlockingQueue<Runnable> workQueue = null;
+			final ExecutorService executorService = MonitoredThreadPoolExecutor.create(poolName,
+					this.corePoolSize, this.maximumPoolSize, this.keepAliveTime, this.timeUnit,
+					workQueue, this.threadFactory, this.rejectedExecutionHandler);
+			ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY.put(poolName,
+					(MonitoredThreadPoolExecutor) executorService);
+			return executorService;
+		}
 	}
 }
