@@ -27,15 +27,17 @@ public class ExecutorServiceUtilTest {
 	 */
 	@Test
 	public void test_runnable_execute() throws Exception {
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 3);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 1, 2,
+				5);
+		JobContext.beginRegisteringJob("job-001", 10);
 		for (int i = 1; i <= 10; i++) {
-			RunnableContext.setId("task【" + i + "】");
-			RunnableContext.setName("任务测试");
+			TaskContext.setId("task【" + i + "】");
+			TaskContext.setName("任务测试");
 			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
 					try {
-						TimeUnit.SECONDS.sleep(3);
+						TimeUnit.SECONDS.sleep(1);
 					} catch (final InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -45,7 +47,7 @@ public class ExecutorServiceUtilTest {
 			executorService.execute(runnable);
 
 		}
-
+		JobContext.endRegisteringJob("job-001");
 		executorService.awaitTermination(10, TimeUnit.MINUTES);
 		TimeUnit.MINUTES.sleep(10);
 	}
@@ -56,11 +58,12 @@ public class ExecutorServiceUtilTest {
 	 */
 	@Test
 	public void test_runnable_execute_exception() throws Exception {
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 3, 3,
+				100);
 		final AtomicInteger counter = new AtomicInteger(1);
 		for (int i = 1; i <= 6; i++) {
-			RunnableContext.setId("task【" + counter.getAndIncrement() + "】");
-			RunnableContext.setName("任务测试");
+			TaskContext.setId("task【" + counter.getAndIncrement() + "】");
+			TaskContext.setName("任务测试");
 			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
@@ -87,11 +90,12 @@ public class ExecutorServiceUtilTest {
 	 */
 	@Test
 	public void test_runnable() throws Exception {
-
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(10, 10, 100);
+		JobContext.beginRegisteringJob("job-001", 30);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 10, 10,
+				100);
 		for (int i = 1; i <= 30; i++) {
-			RunnableContext.setId("task【" + i + "】");
-			RunnableContext.setName("任务测试" + i);
+			TaskContext.setId("task【" + i + "】");
+			TaskContext.setName("任务测试" + i);
 			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
@@ -105,7 +109,7 @@ public class ExecutorServiceUtilTest {
 			};
 			executorService.submit(runnable);
 		}
-
+		JobContext.endRegisteringJob("job-001");
 		executorService.awaitTermination(10, TimeUnit.MINUTES);
 	}
 
@@ -113,12 +117,14 @@ public class ExecutorServiceUtilTest {
 	 * 
 	 *  submit（）方法向线程池提交Runnable任务测试(任务执行模拟异常)
 	 */
+	@SuppressWarnings("unused")
 	@Test
 	public void test_runnable_exception() throws Exception {
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 3, 3,
+				100);
 		for (int i = 1; i <= 6; i++) {
-			RunnableContext.setId("task【" + i + "】");
-			RunnableContext.setName("任务测试" + i);
+			TaskContext.setId("task【" + i + "】");
+			TaskContext.setName("任务测试" + i);
 			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
@@ -147,10 +153,11 @@ public class ExecutorServiceUtilTest {
 	@Test
 	public void test_callable() throws Exception {
 		final AtomicInteger counter = new AtomicInteger(100);
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 3, 3,
+				100);
 		for (int i = 1; i <= 1; i++) {
-			RunnableContext.setId("task【" + i + "】");
-			RunnableContext.setName("任务测试" + i);
+			TaskContext.setId("task【" + i + "】");
+			TaskContext.setName("任务测试" + i);
 			final Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
@@ -186,14 +193,16 @@ public class ExecutorServiceUtilTest {
 	 * 
 	 * submit（）方法向线程池提交多个Callable任务,invokeAll()方法，此方法当这多个任务全部执行完成，此方法才返回，否则会一直阻塞
 	 */
+	@SuppressWarnings("unused")
 	@Test
 	public void test_invokeAll() throws Exception {
 		final AtomicInteger counter = new AtomicInteger();
 		final List<Callable<Integer>> callableList = new LinkedList<>();
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 3, 3,
+				100);
 		for (int i = 1; i <= 3; i++) {
-			RunnableContext.setId("task【" + i + "】");
-			RunnableContext.setName("任务测试" + i);
+			TaskContext.setId("task【" + i + "】");
+			TaskContext.setName("任务测试" + i);
 			final Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
@@ -216,14 +225,16 @@ public class ExecutorServiceUtilTest {
 	 * 
 	 * 向线程池提交多个Callable任务,invokeAll()方法，此方法当这多个任务全部执行完成，此方法才返回，否则会一直阻塞
 	 */
+	@SuppressWarnings("unused")
 	@Test
 	public void test_invokeAny() throws Exception {
 		final AtomicInteger counter = new AtomicInteger();
 		final List<Callable<Integer>> callableList = new LinkedList<>();
-		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService(3, 3, 100);
+		final ExecutorService executorService = ExecutorServiceUtil.newExecutorService("测试", 3, 3,
+				100);
 		final String id = null;
 		for (int i = 1; i <= 10; i++) {
-			RunnableContext.setId("task【" + i + "】");
+			TaskContext.setId("task【" + i + "】");
 			final Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {

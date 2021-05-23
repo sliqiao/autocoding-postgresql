@@ -13,6 +13,7 @@ import lombok.Data;
  * @date: Oct 28, 2020 3:15:32 PM
  * @param <V>
  */
+@Deprecated
 @Data
 class CallableWrapper<V> implements Callable<V> {
 	private static String PREFIX = "c-";

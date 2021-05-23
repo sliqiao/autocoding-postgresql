@@ -23,6 +23,11 @@ class TaskStatInfo {
 	 */
 	private String name;
 	/**
+	 * job Id
+	 */
+	private String jobId;
+
+	/**
 	 * 原Runnable/Callable任务的hashCode
 	 */
 	private int oriHashCode;

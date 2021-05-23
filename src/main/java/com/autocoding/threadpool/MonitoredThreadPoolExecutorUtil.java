@@ -75,7 +75,7 @@ class MonitoredThreadPoolExecutorUtil {
 			sb.append(String.format("rejected tasks:%s",
 					Joiner.on(",").join(e.getRejectedTaskIdSet()))).append('\n');
 			MonitoredThreadPoolExecutorUtil.log
-			.error("任务状态查询结果：" + MonitoredThreadPoolExecutor.queryTaskState().toString());
+					.info("任务状态查询结果：" + MonitoredThreadPoolExecutor.queryTaskState().toString());
 		}
 		MonitoredThreadPoolExecutorUtil.printSepLine(sb, title);
 		return sb;

@@ -21,9 +21,9 @@ final class RunnableUtil {
 	 */
 	public static String getTaskIdAndClear(Runnable runnable) {
 		String runnableId = String.valueOf(runnable.hashCode());
-		if (null != RunnableContext.getId()) {
-			runnableId = RunnableContext.getId();
-			RunnableContext.removeId();
+		if (null != TaskContext.getId()) {
+			runnableId = TaskContext.getId();
+			TaskContext.removeId();
 		}
 		return runnableId;
 
@@ -36,9 +36,9 @@ final class RunnableUtil {
 	 */
 	public static String getTaskIdAndClear(Callable<?> callable) {
 		String callableId = String.valueOf(callable.hashCode());
-		if (null != RunnableContext.getId()) {
-			callableId = RunnableContext.getId();
-			RunnableContext.removeId();
+		if (null != TaskContext.getId()) {
+			callableId = TaskContext.getId();
+			TaskContext.removeId();
 		}
 		return callableId;
 
@@ -51,9 +51,9 @@ final class RunnableUtil {
 	 */
 	public static String getTaskNameAndClear() {
 		String taskName = null;
-		if (null != RunnableContext.getName()) {
-			taskName = RunnableContext.getName();
-			RunnableContext.removeName();
+		if (null != TaskContext.getName()) {
+			taskName = TaskContext.getName();
+			TaskContext.removeName();
 		}
 		return taskName;
 

@@ -19,7 +19,10 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.autocoding.threadpool.TaskStatInfo.State;
 import com.autocoding.threadpool.warn.DingDingMsg;
@@ -48,9 +51,13 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 	private String poolName;
 	/**
-	 * key=taskId , value=RunnableStatInfo
+	 * key=taskId , value=TaskStatInfo
 	 */
 	private final Map<String, TaskStatInfo> taskStatInfoMap;
+	/**
+	 * key=taskId , value=JobStatInfo
+	 */
+	private final Map<String, JobStatInfo> jobStatInfoMap;
 	/**
 	 * key=futureTask的hashCode , value=taskId
 	 */
@@ -68,6 +75,10 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 	/** key=taskId , value=State  */
 	public static final DelayQueue<DeleteTaskStateDelayedModel<String>> DELAY_QUEUE_OF_DELETE_TASK_STATE = new DelayQueue<>();
+	/**
+	 * key=jobId value=counter
+	 */
+	public static final Map<String, AtomicInteger> JOB_ID_COUNTER = new ConcurrentHashMap<>();
 
 	private MonitoredThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
 			TimeUnit timeUnit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
@@ -75,6 +86,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		super(corePoolSize, maximumPoolSize, keepAliveTime, timeUnit, workQueue, threadFactory,
 				handler);
 		this.taskStatInfoMap = new ConcurrentHashMap<String, TaskStatInfo>(maximumPoolSize * 10);
+		this.jobStatInfoMap = new ConcurrentHashMap<String, JobStatInfo>(maximumPoolSize * 10);
 		this.taskIdMap = new ConcurrentHashMap<Integer, String>(maximumPoolSize * 10);
 
 	}
@@ -116,7 +128,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	 * @return
 	 */
 
-	public static ExecutorService create(String poolName, int corePoolSize, int maximumPoolSize,
+	private static ExecutorService create(String poolName, int corePoolSize, int maximumPoolSize,
 			long keepAliveTime, TimeUnit timeUnit, BlockingQueue<Runnable> workQueue,
 			ThreadFactory threadFactory, RejectedExecutionHandler handler) {
 		final MyRejectedExecutionHandler wrappedHandler = new MonitoredThreadPoolExecutor.MyRejectedExecutionHandler(
@@ -138,12 +150,15 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		final RunnableFuture<T> runnableFuture = super.newTaskFor(callable);
 		final String taskId = RunnableUtil.getTaskIdAndClear(runnableFuture);
 		final String taskName = RunnableUtil.getTaskNameAndClear();
+		final String jobId = JobContext.getId();
+		final Integer numOfTaskInJob = JobContext.getNumOfTasks();
 		this.taskIdMap.put(runnableFuture.hashCode(), taskId);
 		TaskStatInfo runnableStatInfo = this.taskStatInfoMap.get(taskId);
 		if (null == runnableStatInfo) {
 			runnableStatInfo = new TaskStatInfo();
 			runnableStatInfo.setId(taskId);
 			runnableStatInfo.setName(taskName);
+			runnableStatInfo.setJobId(jobId);
 			runnableStatInfo.setOriHashCode(runnableFuture.hashCode());
 			runnableStatInfo.setSubmittedTime(new Date());
 			runnableStatInfo.setStartTime(new Date());
@@ -151,14 +166,30 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		}
 		this.watingTaskIdSet.add(taskId);
 		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.WATING);
+		if (StringUtils.isNotEmpty(jobId)) {
+			MonitoredThreadPoolExecutor.JOB_ID_COUNTER.putIfAbsent(jobId, new AtomicInteger(0));
+			if (!this.jobStatInfoMap.containsKey(jobId)) {
+				this.jobStatInfoMap.put(jobId, JobStatInfo.newInstance(jobId, numOfTaskInJob));
+			}
+			MonitoredThreadPoolExecutor.JOB_ID_COUNTER.putIfAbsent(jobId, new AtomicInteger(0));
+		}
+
 		return runnableFuture;
 	}
 
 	//execute(Runnable ) 提交任务的调用点/submit(Callable)的执行点
 	@Override
 	public void execute(Runnable command) {
+		final String jobId = JobContext.getId();
+		final Integer numOfTaskInJob = JobContext.getNumOfTasks();
 		String taskId = null;
 		String taskName = null;
+		if (StringUtils.isNotEmpty(jobId)) {
+			MonitoredThreadPoolExecutor.JOB_ID_COUNTER.putIfAbsent(jobId, new AtomicInteger(0));
+			if (!this.jobStatInfoMap.containsKey(jobId)) {
+				this.jobStatInfoMap.put(jobId, JobStatInfo.newInstance(jobId, numOfTaskInJob));
+			}
+		}
 		if (null != this.taskIdMap.get(command.hashCode())) {
 			taskId = this.taskIdMap.get(command.hashCode());
 			super.execute(command);
@@ -167,15 +198,16 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			taskId = RunnableUtil.getTaskIdAndClear(command);
 			taskName = RunnableUtil.getTaskNameAndClear();
 			final RunnableWrapper runnable = RunnableWrapper.newInstance(taskName, taskId, command);
-			TaskStatInfo runnableStatInfo = this.taskStatInfoMap.get(taskId);
-			if (null == runnableStatInfo) {
-				runnableStatInfo = new TaskStatInfo();
-				runnableStatInfo.setId(taskId);
-				runnableStatInfo.setName(taskName);
-				runnableStatInfo.setOriHashCode(command.hashCode());
-				runnableStatInfo.setSubmittedTime(new Date());
-				runnableStatInfo.setStartTime(new Date());
-				this.taskStatInfoMap.put(taskId, runnableStatInfo);
+			TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
+			if (null == taskStatInfo) {
+				taskStatInfo = new TaskStatInfo();
+				taskStatInfo.setId(taskId);
+				taskStatInfo.setJobId(jobId);
+				taskStatInfo.setName(taskName);
+				taskStatInfo.setOriHashCode(command.hashCode());
+				taskStatInfo.setSubmittedTime(new Date());
+				taskStatInfo.setStartTime(new Date());
+				this.taskStatInfoMap.put(taskId, taskStatInfo);
 			}
 			this.taskIdMap.put(runnable.hashCode(), taskId);
 			this.watingTaskIdSet.add(taskId);
@@ -187,24 +219,26 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	@Override
 	protected void beforeExecute(Thread thread, Runnable runnable) {
 
-		/*	final String taskId = RunnableUtil.getTaskId(r);
-			this.taskIdMap.put(r.hashCode(), taskId);*/
+		String jobId = null;
 		final String taskId = this.taskIdMap.get(runnable.hashCode());
 		String taskName = null;
 		TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
 		if (null != taskStatInfo) {
+			jobId = taskStatInfo.getJobId();
 			taskStatInfo.setStartTime(new Date());
 			taskName = taskStatInfo.getName();
 		} else {
 			// TODO  ExecutorService.execute(Runnable)提交的任务，不经过newTaskFor（）方法，所以需要在这里初始化TaskStatInfo对象
 			taskStatInfo = new TaskStatInfo();
 			taskStatInfo.setId(taskId);
+			taskStatInfo.setJobId(jobId);
 			taskStatInfo.setOriHashCode(runnable.hashCode());
 			taskStatInfo.setSubmittedTime(new Date());
 			taskStatInfo.setStartTime(new Date());
 			this.taskStatInfoMap.put(taskStatInfo.getId(), taskStatInfo);
 		}
-		MonitoredThreadPoolExecutor.log.info("TaskName:{},TaskId:{},开始执行！ ", taskName, taskId);
+		MonitoredThreadPoolExecutor.log.info("TaskName:{},TaskId:{},JobId:{},开始执行！ ", taskName,
+				taskId, jobId);
 		this.executingTaskIdSet.add(taskId);
 		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.EXECUTING);
 		this.watingTaskIdSet.remove(taskId);
@@ -230,13 +264,16 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 				throwable = e.getCause();
 			}
 		}
+		TaskStatInfo taskStatInfo = null;
 		Long waitingTimeInMs = null;
 		Long elapsedTimeInMs = null;
 		Long totalTimeInMs = null;
 		final String taskId = this.taskIdMap.get(runnable.hashCode());
 		String taskName = null;
+		String jobId = null;
 		if (null != taskId) {
-			final TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
+			taskStatInfo = this.taskStatInfoMap.get(taskId);
+			jobId = taskStatInfo.getJobId();
 			if (null != taskStatInfo) {
 				taskName = taskStatInfo.getName();
 				final Date startTime = taskStatInfo.getStartTime();
@@ -251,41 +288,59 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			}
 
 		}
+		Integer counter = null;
+		Integer numOfTaskInJob = null;
+		if (StringUtils.isNotEmpty(jobId)) {
+			counter = MonitoredThreadPoolExecutor.JOB_ID_COUNTER.get(jobId).incrementAndGet();
+			final JobStatInfo jobStatInfo = this.jobStatInfoMap.get(taskStatInfo.getJobId());
+			numOfTaskInJob = jobStatInfo.getNumOfTaskInJob();
+			if (null != jobStatInfo && counter >= jobStatInfo.getNumOfTaskInJob()) {
 
+				jobStatInfo.setEndTime(new Date());
+				MonitoredThreadPoolExecutor.log.info("Job执行完毕,jobId:{},共耗时:{} ms,counter:{}", jobId,
+						jobStatInfo.getEndTime().getTime() - jobStatInfo.getStartTime().getTime(),
+						counter);
+			}
+		}
 		if (null != throwable) {
 			MonitoredThreadPoolExecutor.log.error(
-					"TaskName:{},TaskId:{},结束执行【异常】, "
+					"No:{}/{},TaskId:{},JobId:{},结束执行【异常】, "
 							+ "执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 							+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s,throwable:",
-							taskName, taskId, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
-							this.getCorePoolSize(), this.getMaximumPoolSize(), this.getLargestPoolSize(),
-							this.getCompletedTaskCount(), this.getQueue().size(), this.getTaskCount(),
-							this.getKeepAliveTime(TimeUnit.SECONDS), throwable.getMessage());
+							counter == null ? "-" : counter, numOfTaskInJob == null ? "-" : numOfTaskInJob,
+									taskId, jobId, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
+									this.getCorePoolSize(), this.getMaximumPoolSize(), this.getLargestPoolSize(),
+									this.getCompletedTaskCount(), this.getQueue().size(), this.getTaskCount(),
+									this.getKeepAliveTime(TimeUnit.SECONDS), throwable.getMessage());
 		} else {
 			if (totalTimeInMs > MonitoredThreadPoolExecutor.EXECUTION_TIME_OUT_IN_MS) {
 				MonitoredThreadPoolExecutor.log.warn(
-						"TaskName:{},TaskId:{},结束执行【执行超时】, "
+						"No:{}/{},TaskId:{},JobId:{},结束执行【执行超时】, "
 								+ "等待时间: {} ms, 执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 								+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s",
-								taskName, taskId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
-								this.getPoolSize(), this.getCorePoolSize(), this.getMaximumPoolSize(),
-								this.getLargestPoolSize(), this.getCompletedTaskCount(),
-								this.getQueue().size(), this.getTaskCount(),
-								this.getKeepAliveTime(TimeUnit.SECONDS));
+								counter == null ? "-" : counter,
+										numOfTaskInJob == null ? "-" : numOfTaskInJob, taskId, jobId,
+												waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
+												this.getCorePoolSize(), this.getMaximumPoolSize(),
+												this.getLargestPoolSize(), this.getCompletedTaskCount(),
+												this.getQueue().size(), this.getTaskCount(),
+												this.getKeepAliveTime(TimeUnit.SECONDS));
 			} else {
 				MonitoredThreadPoolExecutor.log.info(
-						"TaskName:{},TaskId:{},结束执行, "
+						"No:{}/{},TaskId:{},JobId:{},结束执行, "
 								+ "等待时间: {} ms, 执行耗时: {} ms, ActiveThreadNum: {}, CurrentPoolSize: {}, CorePoolSize: {},MaximumPoolSize: {},LargestPoolSize: {},Task-Completed: {},"
 								+ "Task-In-Queue: {}, Task-Total: {},  Thead-KeepAliveTime: {}s",
-								taskName, taskId, waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(),
-								this.getPoolSize(), this.getCorePoolSize(), this.getMaximumPoolSize(),
-								this.getLargestPoolSize(), this.getCompletedTaskCount(),
-								this.getQueue().size(), this.getTaskCount(),
-								this.getKeepAliveTime(TimeUnit.SECONDS));
+								counter == null ? "-" : counter,
+										numOfTaskInJob == null ? "-" : numOfTaskInJob, taskId, jobId,
+												waitingTimeInMs, elapsedTimeInMs, this.getActiveCount(), this.getPoolSize(),
+												this.getCorePoolSize(), this.getMaximumPoolSize(),
+												this.getLargestPoolSize(), this.getCompletedTaskCount(),
+												this.getQueue().size(), this.getTaskCount(),
+												this.getKeepAliveTime(TimeUnit.SECONDS));
 			}
 
 		}
-		//TODO 不再使用的数据清理掉，避免内存溢出
+
 		this.taskIdMap.remove(runnable.hashCode());
 		this.taskStatInfoMap.remove(taskId);
 		this.executingTaskIdSet.remove(taskId);
@@ -295,6 +350,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 				MonitoredThreadPoolExecutor.DEFAULT_KEEP_TIME_IN_MINUTES_FOR_TASKINFO,
 				TimeUnit.MINUTES));
 		MonitoredThreadPoolExecutor.TASK_ID_STATE_MAP.put(taskId, State.COMPLETED);
+
 	}
 
 	@Override
@@ -386,6 +442,15 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 						MonitoredThreadPoolExecutor.DEFAULT_KEEP_TIME_IN_MINUTES_FOR_TASKINFO,
 						TimeUnit.MINUTES));
 				monitoredThreadPoolExecutor.getWatingTaskIdSet().remove(taskId);
+
+				final TaskStatInfo taskStatInfo = this.monitoredThreadPoolExecutor.taskStatInfoMap
+						.get(taskId);
+				if (null != taskStatInfo && StringUtils.isNotEmpty(taskStatInfo.getJobId())) {
+					final AtomicInteger counter = MonitoredThreadPoolExecutor.JOB_ID_COUNTER
+							.get(taskStatInfo.getJobId());
+					counter.incrementAndGet();
+				}
+
 			}
 			this.rejectedExecutionHandler.rejectedExecution(r, executor);
 			final String text = String.format("告警,线程池满了，任务列队也满了，丢弃任务:" + taskId);
@@ -443,6 +508,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 	 *
 	 */
 	public static class Builder {
+		private String poolName;
 		private int corePoolSize;
 		private int maximumPoolSize;
 		private long keepAliveTime;
@@ -451,41 +517,45 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 		private ThreadFactory threadFactory;
 		private RejectedExecutionHandler rejectedExecutionHandler;
 
-		private Builder() {
+		public Builder() {
 		}
 
-		public Builder setCorePoolSize(int corePoolSize) {
+		public Builder poolName(String poolName) {
+			this.poolName = poolName;
+			return this;
+		}
+
+		public Builder corePoolSize(int corePoolSize) {
 			this.corePoolSize = corePoolSize;
 			return this;
 		}
 
-		public Builder setMaximumPoolSize(int maximumPoolSize) {
+		public Builder maximumPoolSize(int maximumPoolSize) {
 			this.maximumPoolSize = maximumPoolSize;
 			return this;
 		}
 
-		public Builder setKeepAliveTime(long keepAliveTime) {
+		public Builder keepAliveTime(long keepAliveTime) {
 			this.keepAliveTime = keepAliveTime;
 			return this;
 		}
 
-		public Builder setTimeUnit(TimeUnit timeUnit) {
+		public Builder timeUnit(TimeUnit timeUnit) {
 			this.timeUnit = timeUnit;
 			return this;
 		}
 
-		public Builder setWorkQueue(BlockingQueue<Runnable> workQueue) {
+		public Builder workQueue(BlockingQueue<Runnable> workQueue) {
 			this.workQueue = workQueue;
 			return this;
 		}
 
-		public Builder setThreadFactory(ThreadFactory threadFactory) {
+		public Builder threadFactory(ThreadFactory threadFactory) {
 			this.threadFactory = threadFactory;
 			return this;
 		}
 
-		public Builder setRejectedExecutionHandler(
-				RejectedExecutionHandler rejectedExecutionHandler) {
+		public Builder rejectedExecutionHandler(RejectedExecutionHandler rejectedExecutionHandler) {
 			this.rejectedExecutionHandler = rejectedExecutionHandler;
 			return this;
 		}
@@ -502,15 +572,16 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 
 		public ExecutorService build() {
 			this.check();
-			final String poolName = ExecutorServiceUtil.genPoolName();
+			if (StringUtils.isEmpty(this.poolName)) {
+				this.poolName = ExecutorServiceUtil.genPoolName();
+			}
 			if (this.maximumPoolSize < this.corePoolSize) {
 				this.maximumPoolSize = this.corePoolSize;
 			}
-			final BlockingQueue<Runnable> workQueue = null;
-			final ExecutorService executorService = MonitoredThreadPoolExecutor.create(poolName,
-					this.corePoolSize, this.maximumPoolSize, this.keepAliveTime, this.timeUnit,
-					workQueue, this.threadFactory, this.rejectedExecutionHandler);
-			ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY.put(poolName,
+			final ExecutorService executorService = MonitoredThreadPoolExecutor.create(
+					this.poolName, this.corePoolSize, this.maximumPoolSize, this.keepAliveTime,
+					this.timeUnit, this.workQueue, this.threadFactory, this.rejectedExecutionHandler);
+			ExecutorServiceUtil.EXECUTOR_SERVICE_REGISTRY.put(this.poolName,
 					(MonitoredThreadPoolExecutor) executorService);
 			return executorService;
 		}
