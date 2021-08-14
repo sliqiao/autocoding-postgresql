@@ -1,5 +1,8 @@
 package com.autocoding.threadpool;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * TaskContext 任务上下文
  *
@@ -13,6 +16,14 @@ public class TaskContext {
 		@Override
 		protected String initialValue() {
 			return null;
+		}
+
+	};
+	private static ThreadLocal<Map<String, Object>> EXT = new ThreadLocal<Map<String, Object>>() {
+
+		@Override
+		protected Map<String, Object> initialValue() {
+			return new HashMap<>();
 		}
 
 	};
@@ -51,4 +62,31 @@ public class TaskContext {
 
 	}
 
+	public static void append2Ext(String key, Object value) {
+		TaskContext.EXT.get().put(key, value);
+	}
+
+	public static Map<String, Object> getExt() {
+		return TaskContext.EXT.get();
+	}
+
+	public static Map<String, Object> getExtAndRemove() {
+		final Map<String, Object> ext = TaskContext.EXT.get();
+		TaskContext.EXT.remove();
+		return ext;
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> T getExtByKey(String key) {
+		return (T) TaskContext.EXT.get().get(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T removeFromExt(String key) {
+		return (T) TaskContext.EXT.get().remove(key);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void removeExt() {
+		TaskContext.EXT.remove();
+	}
 }

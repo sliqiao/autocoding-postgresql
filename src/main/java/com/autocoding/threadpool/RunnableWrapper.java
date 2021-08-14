@@ -1,6 +1,9 @@
 package com.autocoding.threadpool;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.alibaba.fastjson.JSON;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,7 @@ class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
 	private String name;
 	private String desc;
 	private Integer priority = RunnableWrapper.DEFAULT_PRIORITY;
+	private Map<String, Object> ext;
 
 	public static RunnableWrapper newInstance(Runnable runnable) {
 		final String id = RunnableWrapper.PREFIX
@@ -50,33 +54,14 @@ class RunnableWrapper implements Runnable, Comparable<RunnableWrapper> {
 
 	}
 
-	public String getId() {
-		return this.id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDesc() {
-		return this.desc;
-	}
-
-	public void setDesc(String desc) {
-		this.desc = desc;
-	}
 
 	@Override
 	public void run() {
 		try {
+			//这里可以使用从主调线程传过来的ext
+			if (this.ext != null && this.ext.size() > 0) {
+				RunnableWrapper.log.info("ext:{}", JSON.toJSONString(this.ext));
+			}
 			this.runnable.run();
 		} catch (final Exception e) {
 			RunnableWrapper.log

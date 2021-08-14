@@ -14,6 +14,7 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
@@ -198,6 +199,7 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			taskId = RunnableUtil.getTaskIdAndClear(command);
 			taskName = RunnableUtil.getTaskNameAndClear();
 			final RunnableWrapper runnable = RunnableWrapper.newInstance(taskName, taskId, command);
+			runnable.setExt(TaskContext.getExt());
 			TaskStatInfo taskStatInfo = this.taskStatInfoMap.get(taskId);
 			if (null == taskStatInfo) {
 				taskStatInfo = new TaskStatInfo();
@@ -459,6 +461,9 @@ public class MonitoredThreadPoolExecutor extends ThreadPoolExecutor {
 			final DingDingMsgService dingDingMsgService = DingDingMsgServiceImpl.getInstance();
 			dingDingMsgService.sent(RequestSourceEnum.SYSTEM_DEPLOYMENT, dingDingMsgForLink);
 			this.rejectedExecutionHandler.rejectedExecution(r, executor);
+			if (r != null && r instanceof FutureTask) {
+				((FutureTask) r).cancel(true);
+			}
 		}
 	}
 

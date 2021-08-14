@@ -33,6 +33,7 @@ public class ExecutorServiceUtilTest {
 		for (int i = 1; i <= 10; i++) {
 			TaskContext.setId("task【" + i + "】");
 			TaskContext.setName("任务测试");
+			TaskContext.append2Ext("name", "liqiao:" + i);
 			final Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
@@ -49,7 +50,6 @@ public class ExecutorServiceUtilTest {
 		}
 		JobContext.endRegisteringJob("job-001");
 		executorService.awaitTermination(10, TimeUnit.MINUTES);
-		TimeUnit.MINUTES.sleep(10);
 	}
 
 	/**
