@@ -195,7 +195,7 @@ public final class ExecutorServiceUtil {
 				}
 
 			}
-		}, 0, 60, TimeUnit.SECONDS);
+				}, 600, 60, TimeUnit.SECONDS);
 		//周期性的清除统计日志数据
 		ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE
 		.scheduleWithFixedDelay(new Runnable() {
@@ -208,7 +208,7 @@ public final class ExecutorServiceUtil {
 				}
 
 			}
-		}, 0, 1, TimeUnit.HOURS);
+		}, 1, 1, TimeUnit.HOURS);
 		//保留任务执行状态1小时，之后进行删除
 		ExecutorServiceUtil.DEFAULT_SCHEDULED_EXECUTOR_SERVICE.submit(new Runnable() {
 

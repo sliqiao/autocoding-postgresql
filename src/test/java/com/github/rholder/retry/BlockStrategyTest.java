@@ -16,7 +16,7 @@ public class BlockStrategyTest {
 	}
 
 	@Slf4j
-	private static class MyBlockStrategy implements BlockStrategy {
+	public static class MyBlockStrategy implements BlockStrategy {
 
 		private static ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = ExecutorServiceUtil
 				.getDefaultScheduledExecutorService();
@@ -24,7 +24,7 @@ public class BlockStrategyTest {
 
 		@Override
 		public void block(long sleepTime) throws InterruptedException {
-			MyBlockStrategy.log.info("开始阻塞");
+			//MyBlockStrategy.log.info("开始阻塞");
 			MyBlockStrategy.SCHEDULED_EXECUTOR_SERVICE.schedule(new Runnable() {
 
 				@Override
@@ -34,7 +34,7 @@ public class BlockStrategyTest {
 				}
 			}, sleepTime, TimeUnit.MILLISECONDS);
 			this.semaphore.acquire();
-			MyBlockStrategy.log.info("结束阻塞");
+			//MyBlockStrategy.log.info("结束阻塞");
 
 		}
 
