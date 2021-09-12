@@ -1,4 +1,4 @@
-package com.google.common.escape;
+package com.autocoding.com.google.common.escape;
 
 import org.junit.Test;
 

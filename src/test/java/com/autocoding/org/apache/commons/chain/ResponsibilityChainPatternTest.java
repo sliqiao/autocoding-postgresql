@@ -1,4 +1,4 @@
-package org.apache.commons.chain;
+package com.autocoding.org.apache.commons.chain;
 
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.Context;
@@ -8,8 +8,8 @@ import org.apache.commons.chain.impl.ContextBase;
 import org.apache.commons.collections.MapUtils;
 import org.junit.Test;
 
+import com.autocoding.com.github.rholder.retry.BlockStrategyTest.MyBlockStrategy;
 import com.github.rholder.retry.BlockStrategy;
-import com.github.rholder.retry.BlockStrategyTest.MyBlockStrategy;
 
 import lombok.extern.slf4j.Slf4j;
 

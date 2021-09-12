@@ -1,10 +1,11 @@
-package com.github.rholder.retry;
+package com.autocoding.com.github.rholder.retry;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import com.autocoding.threadpool.ExecutorServiceUtil;
+import com.github.rholder.retry.BlockStrategy;
 
 import lombok.extern.slf4j.Slf4j;
 

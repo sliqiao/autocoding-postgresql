@@ -1,4 +1,4 @@
-package com.google.common.reflect1;
+package com.autocoding.com.google.common.reflect1;
 
 import org.junit.Test;
 
